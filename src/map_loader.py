@@ -14,8 +14,11 @@ class MapLoader():
         self._zones: dict[str, Zone] = {}
         self._connections: dict[str, Connection] = {}
         self._valid_zone_type = [
-            "normal", "blocked", "restricted", "priority"
-        ]
+            "normal", "blocked", "restricted", "priority"]
+        self._valid_metadatas_co = [
+            "max_link_capacity"]
+        self._valid_metadatas_hub = [
+            "color", "zone", "max_drones"]
         self._lineno = 0
 
     @property
@@ -86,7 +89,7 @@ class MapLoader():
                     if self._is_end_hub is True:
                         raise ConfigFileError(
                             f"line {self._lineno} - "
-                            "end_hub found multiple times")
+                            "end_hub found multiple times.")
                     self._is_end_hub = True
                     self._parse_hub(line, 'end_hub')
 
@@ -111,6 +114,12 @@ class MapLoader():
                 "of drones using:\n"
                 "   nb_drones: <number>")
 
+        if self.nb_drones != 0:
+            raise ConfigFileError(
+                f"line {self._lineno} - "
+                "nb_drones found multiple times."
+            )
+
         # get and validate the nb_drones
         try:
             nb_drones_data = line.split(':')
@@ -127,9 +136,11 @@ class MapLoader():
             )
 
     def _parse_hub(self, line: str, hub_type: str) -> None:
-        # check if arg len is > 4
+        # check if arg len is >= 5
         hub_data = line.split()
-        if len(hub_data) < 4:
+        if (len(hub_data) < 4 or
+           (len(hub_data) >= 5
+           and not hub_data[4].startswith('['))):
             raise ConfigFileError(
                 f"line {self._lineno} - "
                 "Zone definition must be:\n"
@@ -147,22 +158,23 @@ class MapLoader():
         try:
             hub_x = hub_data[2]
             hub_x_int = int(hub_x)
-        except Exception:
+        except ValueError:
             raise ConfigFileError(
                 f"line {self._lineno} - "
-                f"(start_hub 'x' value) '{hub_x}' is not a valid int.")
+                f"(hub_type 'x' value) '{hub_x}' is not a valid int.")
 
         # get the y
         try:
             hub_y = hub_data[3]
             hub_y_int = int(hub_y)
-        except Exception:
+        except ValueError:
             raise ConfigFileError(
                 f"line {self._lineno} - "
-                f"(start_hub 'y' value) '{hub_y}' is not a valid int.")
+                f"(hub_type 'y' value) '{hub_y}' is not a valid int.")
 
         # get the metadatas
-        hub_metadatas = self._parse_metadatas(line)
+        hub_metadatas = self._parse_metadatas(
+            line, self._valid_metadatas_hub)
 
         # get the known metadata
         try:
@@ -211,19 +223,33 @@ class MapLoader():
             self._zones[zone.name] = zone
 
     def _parse_connection(self, line: str):
-        # get the datas
+        # get the datas and check the format
+        if not self._is_start_hub or not self._is_end_hub:
+            raise ConfigFileError(
+                f"line {self._lineno} - "
+                "All hubs must be defined before connections.")
+
         connection_datas = line.split()
+        if len(connection_datas) < 2 or len(connection_datas) > 3:
+            raise ConfigFileError(
+                f"line {self._lineno} - "
+                f"Connections must follow the format:\n"
+                "   connection: <zone1>-<zone2>")
+
+        if (len(connection_datas) == 3
+           and not connection_datas[2].startswith('[')):
+            raise ConfigFileError(
+                f"line {self._lineno} - "
+                f"Connections must follow the format:\n"
+                "   connection: <zone1>-<zone2>")
 
         # get the zone's names
         connection_zones = connection_datas[1].split('-')
-
-    # check if the connection format is valid
         if len(connection_zones) != 2:
             raise ConfigFileError(
                 f"line {self._lineno} - "
                 f"Connections must follow the format:\n"
-                "   connection: <zone1>-<zone2>"
-            )
+                "   connection: <zone1>-<zone2>")
 
         # check if the zones name exists
         try:
@@ -239,8 +265,17 @@ class MapLoader():
                 f"line {self._lineno} - "
                 f"Zone '{connection_zones[1]}' doesn't exists.")
 
+        # check if no duplicate
+        if zone_a == zone_b:
+            raise ConfigFileError(
+                f"line {self._lineno} - "
+                f"Zone '{zone_a.name}' and '{zone_b.name}' "
+                "must be two different zones."
+            )
+
         # get the connection metadatas
-        co_metadatas = self._parse_metadatas(line)
+        co_metadatas = self._parse_metadatas(
+            line, self._valid_metadatas_co)
 
         # get the known metadata
         try:
@@ -261,7 +296,7 @@ class MapLoader():
         if key in self._connections:
             raise ConfigFileError(
                 f"line {self._lineno} - "
-                f"Key '{key}' appear more than once.\n"
+                f"Connection '{key}' appear more than once.\n"
                 "The same connection must not appear more than once "
                 "(e.g., a-b and b-a are considered duplicates).")
         else:
@@ -271,8 +306,9 @@ class MapLoader():
                 max_capacity=max_link_cap_int
             )
 
-    def _parse_metadatas(self, line) -> dict[str, str]:
-        # parse the metadatas
+    def _parse_metadatas(self, line,
+                         valid_keys: list[str]) -> dict[str, str]:
+        # parse the metadatas and check if they are valid
         metadatas: dict[str, str] = {}
         try:
             if '[' in line:
@@ -280,9 +316,18 @@ class MapLoader():
                 metadatas_list = metadatas_str.split()
                 for data in metadatas_list:
                     current_key_value = data.split('=')
-                    metadatas[current_key_value[0]] = current_key_value[1]
-        except (ValueError, IndexError) as e:
-            raise ConfigFileError(e)
+                    key = current_key_value[0]
+                    value = current_key_value[1]
+                    if key not in valid_keys:
+                        raise ConfigFileError(
+                            f"line {self._lineno} - "
+                            f"Invalid metadata '{key}'.")
+                    metadatas[key] = value
+        except IndexError:
+            raise ConfigFileError(
+                f"line {self._lineno} - "
+                f"Invalid line '{line}'."
+            )
 
         return metadatas
 
@@ -291,8 +336,7 @@ class MapLoader():
         if self._is_start_hub is False:
             raise ConfigFileError(
                 "start_hub parameter is mandatory:\n"
-                "   start_hub: <name> <x> <y> [metadatas]"
-                )
+                "   start_hub: <name> <x> <y> [metadatas]")
         if self._is_end_hub is False:
             raise ConfigFileError(
                 "end_hub parameter is mandatory:\n"
