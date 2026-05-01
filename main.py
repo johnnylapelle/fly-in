@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 from src.exception import ConfigFileError
 from src.map_loader import MapLoader
@@ -6,17 +7,27 @@ from src.map_loader import MapLoader
 
 def main():
     try:
-        # print("Hello from github-fly-in!")
-        # parser = Parser("maps/easy/01_linear_path.txt")
-        parser = MapLoader("maps/easy/01_linear_path_testing.txt")
-        # parser = Parser("maps/easy/02_simple_fork.txt")
-        # parser = Parser("maps/hard/01_maze_nightmare.txt")
-        parser.parse()
+        parser = argparse.ArgumentParser(description="Fly-in")
+        parser.add_argument('--map', type=str,
+                            default='maps/easy/linear_path.txt')
+        args = parser.parse_args()
+
+        map_loader = MapLoader(args.map)
+        map_loader.parse()
 
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError:
+        print("FileNotFoundError: "
+              f"no such file or directory '{args.map}'.", file=sys.stderr)
+        sys.exit(1)
+    except PermissionError:
+        print(f"PermissionError: '{args.map}'.", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

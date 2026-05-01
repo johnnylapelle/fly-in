@@ -8,7 +8,7 @@ install:
 	uv sync
 
 run:
-	uv run python main.py
+	uv run python main.py $(MAP)
 
 lint:
 	$(FLAKE8) $(MAIN) $(SRC)

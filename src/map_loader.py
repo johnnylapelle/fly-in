@@ -1,7 +1,6 @@
 from .connection import Connection
-from .exception import ConfigFileError, ParameterError
+from .exception import ConfigFileError
 from .zone import Zone
-
 
 class MapLoader():
     def __init__(self, file: str):
@@ -34,21 +33,9 @@ class MapLoader():
         return self._nb_drones
 
     def parse(self) -> None:
-        self._parse_args()
         self._parse_map()
         self._validate()
         self._lineno = 0
-
-        for zone in self._zones.values():
-            print(zone)
-            print()
-
-        for co in self._connections.values():
-            print(co)
-            print()
-
-    def _parse_args(self):
-        pass
 
     def _parse_map(self):
         with open(self._file, 'r') as f:
@@ -161,7 +148,7 @@ class MapLoader():
         except ValueError:
             raise ConfigFileError(
                 f"line {self._lineno} - "
-                f"(hub_type 'x' value) '{hub_x}' is not a valid int.")
+                f"({hub_type} 'x' value) '{hub_x}' is not a valid int.")
 
         # get the y
         try:
@@ -170,7 +157,7 @@ class MapLoader():
         except ValueError:
             raise ConfigFileError(
                 f"line {self._lineno} - "
-                f"(hub_type 'y' value) '{hub_y}' is not a valid int.")
+                f"({hub_type} 'y' value) '{hub_y}' is not a valid int.")
 
         # get the metadatas
         hub_metadatas = self._parse_metadatas(
