@@ -3,27 +3,30 @@ import argparse
 
 from src.exception import ConfigFileError
 from src.map_loader import MapLoader
+from src.graph import Graph
 
 
 def main():
     try:
         parser = argparse.ArgumentParser(description="Fly-in")
         parser.add_argument('--map', type=str,
-                            default='maps/easy/linear_path.txt')
+                            default='maps/easy/01_linear_paths.txt')
         args = parser.parse_args()
 
         map_loader = MapLoader(args.map)
         map_loader.parse()
+
+        graph = Graph(map_loader.zones, map_loader.connections)
 
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)
         sys.exit(1)
     except FileNotFoundError:
         print("FileNotFoundError: "
-              f"no such file or directory '{args.map}'.", file=sys.stderr)
+              f"no such file or directory '{args.map}'", file=sys.stderr)
         sys.exit(1)
     except PermissionError:
-        print(f"PermissionError: '{args.map}'.", file=sys.stderr)
+        print(f"PermissionError: '{args.map}'", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

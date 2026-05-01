@@ -6,17 +6,17 @@ class Graph():
                  connections: dict[str, Connection]) -> None:
         self.zones = zones
         self.connections = connections
-        self.adjacency: dict[Zone, list[Connection]] = {}
+        self._adjacency: dict[str, list[Connection]] = {}
+        self._build_adjacency()
+        print(self._adjacency)
 
-    def _build_adjacency(self) -> dict[Zone, list[Connection]]:
+    def _build_adjacency(self) -> None:
         for connection in self.connections.values():
-            self.adjacency.setdefault(
-                connection.zone_a, []).append(connection)
+            self._adjacency.setdefault(
+                connection.zone_a.name, []).append(connection)
 
-            self.adjacency.setdefault(
-                connection.zone_b, []).append(connection)
-
-        return self.adjacency
+            self._adjacency.setdefault(
+                connection.zone_b.name, []).append(connection)
 
     def get_neighbours(self) -> list[Connection]:
         pass

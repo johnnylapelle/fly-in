@@ -8,4 +8,4 @@ class Connection():
         self.max_capacity = max_capacity
 
     def __repr__(self) -> str:
-        return f"{self.zone_a.name}-{self.zone_b.name} {self.max_capacity}"
+        return f"{self.zone_a.name}-{self.zone_b.name}"
