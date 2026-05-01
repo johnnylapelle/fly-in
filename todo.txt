@@ -1,4 +1,13 @@
 Todo:
-	PARSING:
-	- Check if max_drones > 0 in Base
-	- Add flag --map <path>
+	- Construire le graph
+
+
+TODO GLOBALE:
+- Parsing - DONE!
+- Construire le Graph
+- Class drone
+- Pathfinder (algo)
+- Simulation engine
+- Visualisation
+- Output format
+- README
