@@ -2,6 +2,7 @@ from .connection import Connection
 from .exception import ConfigFileError
 from .zone import Zone
 
+
 class MapLoader():
     def __init__(self, file: str):
         self._file = file

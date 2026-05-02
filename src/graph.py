@@ -1,6 +1,7 @@
-from .zone import Zone
 from .connection import Connection
 from .exception import GraphError
+from .zone import Zone
+
 
 class Graph():
     def __init__(self, zones: dict[str, Zone],

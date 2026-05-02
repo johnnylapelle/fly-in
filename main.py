@@ -1,9 +1,9 @@
-import sys
 import argparse
+import sys
 
 from src.exception import ConfigFileError
-from src.map_loader import MapLoader
 from src.graph import Graph
+from src.map_loader import MapLoader
 
 
 def main():

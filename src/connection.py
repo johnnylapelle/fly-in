@@ -8,7 +8,7 @@ class Connection():
         self.max_capacity = max_capacity
 
     def get_other(self, zone: Zone) -> Zone:
-        # get the neighbour zone connected to zone
+        # get the neighbor zone connected to zone
         if zone == self.zone_a:
             return self.zone_a
         return self.zone_b
