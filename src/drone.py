@@ -1,5 +1,5 @@
 from .zone import Zone
-from.connection import Connection
+from .connection import Connection
 
 
 class Drone:
@@ -17,6 +17,10 @@ class Drone:
     def position(self) -> Zone | Connection:
         return self._position
 
+    @position.setter
+    def position(self, new_pos: Zone | Connection) -> None:
+        self._position = new_pos
+
     @property
     def path(self) -> list[Zone]:
         return self._path
@@ -24,3 +28,7 @@ class Drone:
     @property
     def is_arrived(self) -> bool:
         return self._is_arrived
+
+    @is_arrived.setter
+    def is_arrived(self) -> None:
+        self._is_arrived = True
