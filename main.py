@@ -18,8 +18,11 @@ def main():
 
         map_loader = MapLoader(args.map)
         map_loader.parse()
+        zones = map_loader.zones
+        connections = map_loader.connections
+        nb_drone = map_loader.nb_drones
 
-        graph = Graph(map_loader.zones, map_loader.connections)
+        graph = Graph(zones, connections)
 
         app = QApplication([])
         window = MainWindow(graph)

@@ -1,13 +1,23 @@
 Todo:
-	- Construire le graph
+	- Pathfinder
+	- Afficher drones
+
+GUI:
+	- Afficher drones
+	- Panel:
+		- Show/Hide description
+		- Set de boutons timeline (play, pause, etc)
+	- Afficher le nb de tour
+	- Charger une map
+	- Afficher Graph - DONE!
 
 
 TODO GLOBALE:
-- Parsing - DONE!
-- Construire le Graph
-- Class drone
 - Pathfinder (algo)
 - Simulation engine
-- Visualisation
+- GUI
 - Output format
 - README
+- Parsing - DONE!
+- Construire le Graph - DONE!
+- Class drone - DONE!
