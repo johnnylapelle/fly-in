@@ -1,0 +1,3 @@
+SCALE = 100
+RADIUS = SCALE // 1.5
+

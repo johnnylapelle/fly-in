@@ -21,6 +21,14 @@ class Graph():
     def end(self) -> Zone:
         return self._end
 
+    @property
+    def zones(self) -> dict[str, Zone]:
+        return self._zones
+
+    @property
+    def connections(self) -> dict[str, Connection]:
+        return self._connections
+
     def _build_adjacency(self) -> None:
         # create the dict of adjacency
         for connection in self._connections.values():

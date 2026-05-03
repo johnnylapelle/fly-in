@@ -1,8 +1,11 @@
 import argparse
 import sys
 
+from PyQt6.QtWidgets import QApplication
+
 from src.exception import ConfigFileError
 from src.graph import Graph
+from src.gui.main_window import MainWindow
 from src.map_loader import MapLoader
 
 
@@ -10,13 +13,20 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="Fly-in")
         parser.add_argument('--map', type=str,
-                            default='maps/easy/01_linear_paths.txt')
+                            default='maps/medium/03_priority_puzzle.txt')
         args = parser.parse_args()
 
         map_loader = MapLoader(args.map)
         map_loader.parse()
 
         graph = Graph(map_loader.zones, map_loader.connections)
+
+        app = QApplication([])
+        window = MainWindow(graph)
+
+        window.show()
+        app.exec()
+
 
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)

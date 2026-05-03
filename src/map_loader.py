@@ -146,8 +146,8 @@ class MapLoader():
         try:
             hub_x = hub_data[2]
             hub_x_int = int(hub_x)
-            if hub_x_int < 0:
-                raise ValueError
+            # if hub_x_int < 0:
+            #     raise ValueError
         except ValueError:
             raise ConfigFileError(
                 f"line {self._lineno} - "
@@ -157,8 +157,8 @@ class MapLoader():
         try:
             hub_y = hub_data[3]
             hub_y_int = int(hub_y)
-            if hub_y_int < 0:
-                raise ValueError
+            # if hub_y_int < 0:
+            #     raise ValueError
         except ValueError:
             raise ConfigFileError(
                 f"line {self._lineno} - "
