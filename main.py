@@ -3,10 +3,10 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from src.exception import ConfigFileError
-from src.graph import Graph
+from src.core.exception import ConfigFileError
+from src.core.graph import Graph
 from src.gui.main_window import MainWindow
-from src.map_loader import MapLoader
+from src.io.map_loader import MapLoader
 
 
 def main():

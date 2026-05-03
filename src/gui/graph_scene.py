@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsScene
 
-from ..graph import Graph
+from ..core.graph import Graph
 from .connection_item import ConnectionItem
 from .zone_item import ZoneItem
 

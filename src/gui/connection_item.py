@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen
 from PyQt6.QtWidgets import QGraphicsLineItem
 
-from ..connection import Connection
+from ..core.connection import Connection
 from .utils import SCALE
 
 

@@ -3,8 +3,9 @@ from typing import Callable
 from PyQt6.QtGui import QBrush, QColor, QPen
 from PyQt6.QtWidgets import (QGraphicsEllipseItem, QGraphicsSceneMouseEvent,
                              QGraphicsTextItem)
+from PyQt6.QtCore import Qt
 
-from ..zone import Zone
+from ..core.zone import Zone
 from .utils import RADIUS, SCALE
 
 
@@ -18,10 +19,14 @@ class ZoneItem(QGraphicsEllipseItem):
         self.setBrush(QBrush(QColor(zone.color)))
         self.setPen(QPen(QColor(zone.color)))
 
-        info = (f"{zone.name}\n{zone.zone_type}\n"
-                f"{zone.max_drones} drones\n({zone.x}, {zone.y})")
-        self.label = QGraphicsTextItem(info, self)
-        self.label.setPos(-RADIUS / 2, RADIUS / 2)
+        self.label = QGraphicsTextItem(self)
+        self.label.setTextWidth(100)
+        self.label.setHtml(
+            f"<center>{self._zone.name}<br>"
+            f"{self._zone.zone_type}<br>"
+            f"{self._zone.max_drones} drones</center>")
+        rect = self.label.boundingRect()
+        self.label.setPos(-rect.width() / 2, rect.height() / 2 + 25)
 
         self._on_click = on_click
 
@@ -33,4 +38,4 @@ class ZoneItem(QGraphicsEllipseItem):
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
         self._on_click(self)
-        super().mousePressEvent(event)
+        return super().mousePressEvent(event)

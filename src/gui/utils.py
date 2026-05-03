@@ -1,3 +1,3 @@
-SCALE = 150
+SCALE = 200
 RADIUS = SCALE // 2
 

@@ -1,5 +1,5 @@
-from .drone import Drone
-from .graph import Graph
+from ..core.drone import Drone
+from ..core.graph import Graph
 
 
 class Simulator():

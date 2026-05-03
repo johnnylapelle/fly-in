@@ -1,6 +1,6 @@
-from .connection import Connection
-from .exception import ConfigFileError
-from .zone import Zone
+from ..core.connection import Connection
+from ..core.exception import ConfigFileError
+from ..core.zone import Zone
 
 
 class MapLoader():
