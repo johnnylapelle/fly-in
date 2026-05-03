@@ -1,4 +1,3 @@
-from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget)
 

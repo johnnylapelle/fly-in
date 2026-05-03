@@ -30,7 +30,6 @@ def main():
         window.show()
         app.exec()
 
-
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)
         sys.exit(1)

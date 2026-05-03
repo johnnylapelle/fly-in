@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPen
-from PyQt6.QtWidgets import QGraphicsLineItem
+from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsTextItem
 
 from ..core.connection import Connection
 from .utils import SCALE
@@ -21,6 +21,18 @@ class ConnectionItem(QGraphicsLineItem):
 
         self.setPen(pen)
 
+        # display the max_capacity
+        info_capacity = str(self.co.max_capacity)
+        self.label = QGraphicsTextItem(self)
+        self.label.setHtml(
+            f"<center>{info_capacity}</center>")
+        line = self.line()
+        mid_x = (line.x1() + line.x2()) / 2
+        mid_y = (line.y1() + line.y2()) / 2
+        rect = self.label.boundingRect()
+        self.label.setPos(
+            mid_x - rect.width() / 2, mid_y - rect.height() / 2)
+
     def init_pen(self) -> QPen:
         pen = QPen()
         pen.setWidth(3)
@@ -28,4 +40,3 @@ class ConnectionItem(QGraphicsLineItem):
         pen.setStyle(Qt.PenStyle.DashLine)
 
         return pen
-
