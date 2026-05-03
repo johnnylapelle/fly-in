@@ -1,6 +1,8 @@
-from PyQt6.QtWidgets import QGraphicsView
 from PyQt6.QtGui import QPainter, QWheelEvent
+from PyQt6.QtWidgets import QGraphicsView
+
 from .graph_scene import GraphScene
+
 
 class GraphView(QGraphicsView):
     def __init__(self):

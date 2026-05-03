@@ -1,5 +1,6 @@
 from PyQt6.QtGui import QPainter
-from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
+                             QVBoxLayout, QWidget)
 
 from ..graph import Graph
 from .graph_scene import GraphScene
