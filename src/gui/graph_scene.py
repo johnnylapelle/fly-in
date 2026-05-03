@@ -19,7 +19,10 @@ class GraphScene(QGraphicsScene):
             self.addItem(item)
 
         for zone in self.graph.zones.values():
-            print(zone)
             item = ZoneItem(zone)
             self.zones.append(item)
             self.addItem(item)
+
+    def toggle_labels(self) -> None:
+        for zone in self.zones:
+            zone.toggle_label()
