@@ -147,17 +147,8 @@ class Parser():
                 f"line {self.lineno} - "
                 f"(start_hub 'y' value) '{hub_y}' is not a valid int.")
 
-        # parse the metadat into a dict
-        hub_metadatas: dict[str, str] = {}
-        try:
-            if '[' in line:
-                hub_metadatas_str = line.split('[')[1].strip(']')
-                hub_metadatas_list = hub_metadatas_str.split()
-                for data in hub_metadatas_list:
-                    current_key_value = data.split('=')
-                    hub_metadatas[current_key_value[0]] = current_key_value[1]
-        except (ValueError, IndexError) as e:
-            raise ConfigFileError(e)
+        # get the hub metadatas
+        hub_metadatas = self._parse_metadatas(line)
 
         # get the known metadata
         try:
@@ -205,20 +196,22 @@ class Parser():
         # get the zone's names
         connection_zones = connection_datas[1].split('-')
 
-        zone_a = self.zones[connection_zones[0]]
-        zone_b = self.zones[connection_zones[1]]
+        try:
+            zone_a = self.zones[connection_zones[0]]
+        except KeyError:
+            raise ConfigFileError(
+                f"line {self.lineno} - "
+                f"'{connection_zones[0]}' don't exists.")
+
+        try:
+            zone_b = self.zones[connection_zones[1]]
+        except KeyError:
+            raise ConfigFileError(
+                f"line {self.lineno} - "
+                f"'{connection_zones[1]}' don't exists.")
 
         # get the connection metadatas
-        co_metadatas: dict[str, str] = {}
-        try:
-            if '[' in line:
-                co_metadatas_str = line.split('[')[1].strip(']')
-                co_metadatas_list = co_metadatas_str.split()
-                for data in co_metadatas_list:
-                    current_key_value = data.split('=')
-                    co_metadatas[current_key_value[0]] = current_key_value[1]
-        except (ValueError, IndexError) as e:
-            raise ConfigFileError(e)
+        co_metadatas = self._parse_metadatas(line)
 
         # get the known metadata
         try:
@@ -242,6 +235,21 @@ class Parser():
                 zone_b=zone_b,
                 max_capacity=max_link_cap_int
             )
+
+    def _parse_metadatas(self, line) -> dict[str, str]:
+        # get the metadatas
+        metadatas: dict[str, str] = {}
+        try:
+            if '[' in line:
+                metadatas_str = line.split('[')[1].strip(']')
+                metadatas_list = metadatas_str.split()
+                for data in metadatas_list:
+                    current_key_value = data.split('=')
+                    metadatas[current_key_value[0]] = current_key_value[1]
+        except (ValueError, IndexError) as e:
+            raise ConfigFileError(e)
+
+        return metadatas
 
     def _validate(self):
         """
