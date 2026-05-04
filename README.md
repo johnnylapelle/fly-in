@@ -8,5 +8,9 @@
 - https://tracker.pathfinding.ai/ (Benchmark for MAPF Algo)
 - https://github.com/Jiaoyang-Li/CBSH2-RTC (one of the best MAPF algo)
 
+### Graphical User Interface
+- https://www.pythonguis.com
+- https://doc.qt.io/qtforpython-6/index.html
+
 ### Miscellaneous
 - https://fr.wikipedia.org/wiki/PSPACE

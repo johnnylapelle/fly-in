@@ -1,4 +1,23 @@
 Todo:
-	PARSING:
-	- Check if max_drones > 0 in Base
-	- Add flag --map <path>
+	- Pathfinder
+	- Afficher drones
+
+GUI:
+	- Afficher drones
+	- Panel:
+		- Show/Hide description
+		- Set de boutons timeline (play, pause, etc)
+	- Afficher le nb de tour
+	- Charger une map
+	- Afficher Graph - DONE!
+
+
+TODO GLOBALE:
+- Pathfinder (algo)
+- Simulation engine
+- GUI
+- Output format
+- README
+- Parsing - DONE!
+- Construire le Graph - DONE!
+- Class drone - DONE!
