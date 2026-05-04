@@ -21,3 +21,8 @@ TODO GLOBALE:
 - Parsing - DONE!
 - Construire le Graph - DONE!
 - Class drone - DONE!
+
+
+Idées:
+	- Pouvoir charger une map depuis l'interface
+	- Que tout se passe depuis l'interface

@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
 
         # layout that contain the view and the panel
         layout = QHBoxLayout()
-        layout.addWidget(self._create_view(), stretch=2)
+        layout.addWidget(self._create_view(), stretch=3)
         layout.addWidget(self._create_panel(), stretch=1)
 
         central.setLayout(layout)
