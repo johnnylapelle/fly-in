@@ -15,9 +15,3 @@ class Zone():
 
     def __repr__(self):
         return f"{self.name}"
-                # f"x y = {self.x} {self.y}\n"
-                # f"start = {self.is_start}\n"
-                # f"end = {self.is_end}\n"
-                # f"color = {self.color}\n"
-                # f"zone_type = {self.zone_type}\n"
-                # f"max_drones = {self.max_drones}")

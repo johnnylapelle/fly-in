@@ -26,15 +26,6 @@ def main():
         graph = Graph(zones, connections)
         pathfinding = Pathfinding(graph)
 
-        came_from, cost_so_far = pathfinding.dijkstra_search(graph.end, graph.start)
-        print("came_from")
-        for key, value in came_from.items():
-            print(f"{key}: {value}")
-
-        print("\ncost_so_far")
-        for key, value in cost_so_far.items():
-            print(f"{key}: {value}")
-
         app = QApplication([])
         window = MainWindow(graph)
         window.show()
