@@ -25,6 +25,14 @@ def main():
 
         graph = Graph(zones, connections)
         pathfinding = Pathfinding(graph)
+        path, cost_so_far = pathfinding.space_time_a_star()
+        print("path")
+        for key, value in path.items():
+            print(f"{key}: {value}")
+
+        print("\ncost_so_far:")
+        for key, value in cost_so_far.items():
+            print(f"{key}: {value}")
 
         app = QApplication([])
         window = MainWindow(graph)
