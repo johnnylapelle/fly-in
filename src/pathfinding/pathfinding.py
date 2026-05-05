@@ -8,8 +8,9 @@ class Pathfinding:
         self._graph = graph
         self._cost_so_far: dict[Zone, int] = {}
         self.reservations: dict[tuple[str, int], int] = {}
-
         self._dijkstra_search()
+        for key, value in self._cost_so_far.items():
+            print(key, value)
 
     def _dijkstra_search(self) -> None:
         start = self._graph.end
@@ -33,10 +34,12 @@ class Pathfinding:
 
     def is_available(self, name: str, turn: int) -> bool:
         max_capacity = self._graph.get_max_capacity(name)
-        if self.reservations[(name, turn)] >= max_capacity:
+        current = self.reservations.get((name, turn), 0)
+        if current >= max_capacity:
             return False
         return True
 
     def reserve(self, name: str, turn: int) -> None:
-        self.reservations[(name, turn)] += 1
+        current = self.reservations.get((name, turn), 0)
+        current += 1
 

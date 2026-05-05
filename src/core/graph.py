@@ -70,4 +70,6 @@ class Graph():
     def get_max_capacity(self, name: str) -> int:
         if name in self._connections:
             return self._connections[name].max_capacity
-        return self._zones[name].max_drones
+        if name in self._zones:
+            return self._zones[name].max_drones
+        raise GraphError(f"'{name} not found in zones or connections.")
