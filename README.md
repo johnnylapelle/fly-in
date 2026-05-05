@@ -1,4 +1,11 @@
 # Fly-in
+# Organisation:
+- Parser/MapLoad
+- Creation of the Graph
+- GUI with the visualisation of the Graph
+- Pathfinding Algorithm
+	- BFS -> Dijkstra (heuristic function for A*)
+	- A* (main algo)
 
 ## Resources
 ### Pathfinding algorithm

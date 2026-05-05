@@ -10,8 +10,8 @@ class Connection():
     def get_other(self, zone: Zone) -> Zone:
         # get the neighbor zone connected to zone
         if zone == self.zone_a:
-            return self.zone_a
-        return self.zone_b
+            return self.zone_b
+        return self.zone_a
 
     def __repr__(self) -> str:
         return f"{self.zone_a.name}-{self.zone_b.name}"

@@ -10,14 +10,14 @@ class Zone():
         self.is_start = is_start
         self.is_end = is_end
         self.color = color
-        self.zone_type = zone_type
+        self.type = zone_type
         self.max_drones = max_drones
 
     def __repr__(self):
-        return (f"name = {self.name}\n"
-                f"x y = {self.x} {self.y}\n"
-                f"start = {self.is_start}\n"
-                f"end = {self.is_end}\n"
-                f"color = {self.color}\n"
-                f"zone_type = {self.zone_type}\n"
-                f"max_drones = {self.max_drones}")
+        return f"{self.name}"
+                # f"x y = {self.x} {self.y}\n"
+                # f"start = {self.is_start}\n"
+                # f"end = {self.is_end}\n"
+                # f"color = {self.color}\n"
+                # f"zone_type = {self.zone_type}\n"
+                # f"max_drones = {self.max_drones}")

@@ -23,7 +23,7 @@ class ZoneItem(QGraphicsEllipseItem):
         self.label.setTextWidth(100)
         self.label.setHtml(
             f"<center>{self._zone.name}<br>"
-            f"{self._zone.zone_type}<br>"
+            f"{self._zone.type}<br>"
             f"{self._zone.max_drones} drones</center>")
         rect = self.label.boundingRect()
         self.label.setPos(-rect.width() / 2, rect.height() / 2 + 25)

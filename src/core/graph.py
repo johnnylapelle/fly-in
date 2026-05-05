@@ -29,6 +29,10 @@ class Graph():
     def connections(self) -> dict[str, Connection]:
         return self._connections
 
+    @property
+    def adjacency(self) -> dict[str, list[Connection]]:
+        return self._adjacency
+
     def _build_adjacency(self) -> None:
         # create the dict of adjacency
         for connection in self._connections.values():
@@ -41,6 +45,13 @@ class Graph():
     def get_neighbours(self, zone: Zone) -> list[Connection]:
         # return the neighbours of a zone
         return self._adjacency.get(zone.name, [])
+
+    def cost(self, zone: Zone) -> int:
+        if zone.type == "restricted":
+            return 2
+        elif zone.type == "blocked":
+            return 1000000
+        return 1
 
     def _find_start(self) -> Zone:
         # find the start zone
