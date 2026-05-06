@@ -1,6 +1,7 @@
 Todo:
 	- Pathfinder
 	- Afficher drones
+	- faire transiter par la connection pour les zones restricted
 
 GUI:
 	- Afficher drones

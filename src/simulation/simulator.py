@@ -16,8 +16,6 @@ class Simulator():
             self._execute_turn()
             self._print_logs()
             self._turn += 1
-        # for drone in self._drones:
-            # print(f"Drone: {drone.id}-{drone.position} is_arrived={drone.is_arrived}")
 
     def _execute_turn(self) -> None:
         for drone in self._drones:
