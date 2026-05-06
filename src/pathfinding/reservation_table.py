@@ -15,4 +15,4 @@ class ReservationTable:
 
     def reserve(self, name: str, turn: int) -> None:
         current = self.reservations.get((name, turn), 0)
-        current += 1
+        self.reservations[(name, turn)] = current + 1

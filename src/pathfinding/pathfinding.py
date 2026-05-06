@@ -1,43 +1,54 @@
+from ..core.drone import Drone
+from ..core.exception import PathfindingError
 from ..core.graph import Graph
 from ..core.zone import Zone
 from .priority_queue import PriorityQueue
-from ..core.exception import PathfindingError
 from .reservation_table import ReservationTable
 
 
 class Pathfinding:
-    def __init__(self, graph: Graph) -> None:
+    def __init__(self, graph: Graph, drones: list[Drone]) -> None:
         self._graph = graph
-        self.heuristic: dict[Zone, int] = {}
+        self._drones = drones
+        self._heuristic: dict[Zone, float] = {}
         self._dijkstra_search()
-        self.res_table = ReservationTable(self._graph)
+        print(self._heuristic)
+        self._res_table = ReservationTable(self._graph)
+
+    def compute_path(self):
+        start = self._graph.start
+
+        for drone in self._drones:
+            drone.position = start
+            drone.path = self._space_time_a_star()
+            print(drone.path)
 
     def _dijkstra_search(self) -> None:
         start = self._graph.end
         frontier: PriorityQueue = PriorityQueue()
         frontier.put(start, 0)
-        self.heuristic[start] = 0
+        self._heuristic[start] = 0
 
         while not frontier.empty():
             current = frontier.get()
 
             for next in self._graph.get_neighbours(current):
                 next_zone = next.get_other(current)
-                new_cost = (self.heuristic[current]
+                new_cost = (self._heuristic[current]
                             + self._graph.cost(next_zone))
 
-                if (next_zone not in self.heuristic
-                   or new_cost < self.heuristic[next_zone]):
-                    self.heuristic[next_zone] = new_cost
+                if (next_zone not in self._heuristic
+                   or new_cost < self._heuristic[next_zone]):
+                    self._heuristic[next_zone] = new_cost
                     priority = new_cost
                     frontier.put(next_zone, priority)
 
-    def space_time_a_star(self) -> list[tuple[Zone, int] | None]:
+    def _space_time_a_star(self) -> list[tuple[Zone, int]]:
 
         path: dict[tuple[Zone, int], tuple[Zone, int] | None] = {}
         cost_so_far: dict[tuple[Zone, int], int] = {}
         open_list: PriorityQueue = PriorityQueue()
-        closed_set: set[tuple[Zone, int]] = set()
+        # closed_set: set[tuple[Zone, int]] = set()
 
         start = self._graph.start
         goal = self._graph.end
@@ -45,14 +56,14 @@ class Pathfinding:
 
         cost_so_far[start_state] = 0
         path[start_state] = None
-        open_list.put((start, 0, 0), priority=self.heuristic[start])
+        open_list.put((start, 0, 0), priority=self._heuristic[start])
 
         while not open_list.empty():
             current, turn, g = open_list.get()
 
-            if (current, turn) in closed_set:
-                continue
-            closed_set.add((current, turn))
+            # if (current, turn) in closed_set:
+            #     continue
+            # closed_set.add((current, turn))
 
             current_state = (current, turn)
 
@@ -62,43 +73,53 @@ class Pathfinding:
             for connection in self._graph.get_neighbours(current):
                 next_zone = connection.get_other(current)
                 move_cost = self._graph.cost(next_zone)
-                arrival_turn = turn + move_cost
-                new_cost = g + move_cost
+                arrival_turn = turn + round(move_cost)
+                new_cost = g + round(move_cost)
 
                 next_state = (next_zone, arrival_turn)
 
-                if not self.res_table.is_available(connection.key, turn):
+                if not self._res_table.is_available(connection.key, turn):
                     continue
-                if not self.res_table.is_available(
+                if not self._res_table.is_available(
                  next_zone.name, arrival_turn):
                     continue
 
                 if (next_state not in cost_so_far
                    or new_cost < cost_so_far[next_state]):
-                    f = new_cost + self.heuristic[next_zone]
+
+                    f = new_cost + self._heuristic[next_zone]
 
                     cost_so_far[next_state] = new_cost
                     open_list.put(
                         (next_zone, arrival_turn, new_cost), priority=f)
                     path[next_state] = current_state
 
-            if (current.is_start
-               or self.res_table.is_available(current.name, turn + 1)):
-                f = g + 1 + self.heuristic[current]
-                open_list.put(
-                    (current, turn + 1, g + 1), priority=f)
-                path[(current, turn + 1)] = (current, turn)
+            wait_state = (current, turn + 1)
 
-        correct_path = self.reconstruct_path(path, turn, goal)
+            if (current.is_start
+               or self._res_table.is_available(current.name, turn + 1)):
+
+                wait_cost = g + 1
+
+                if (wait_state not in cost_so_far
+                   or wait_cost < cost_so_far[wait_state]):
+
+                    cost_so_far[wait_state] = wait_cost
+                    f = wait_cost + self._heuristic[current]
+                    open_list.put((current, turn + 1, wait_cost), priority=f)
+                    path[wait_state] = (current, turn)
+
+        correct_path = self._reconstruct_path(path, turn, goal)
+        self._reserve_path(correct_path)
         return correct_path
 
-    def reconstruct_path(
+    def _reconstruct_path(
             self,
             path: dict[tuple[Zone, int], tuple[Zone, int] | None],
             turn: int,
-            goal: Zone) -> list[tuple[Zone, int] | None]:
+            goal: Zone) -> list[tuple[Zone, int]]:
 
-        correct_path: list[tuple[Zone, int] | None] = []
+        correct_path: list[tuple[Zone, int]] = []
         current: tuple[Zone, int] | None = (goal, turn)
 
         if (goal, turn) not in path:
@@ -111,15 +132,15 @@ class Pathfinding:
         correct_path.reverse()
         return correct_path
 
-# 1. Initialise open_list avec (start_zone, turn=0)
-# 2. Tant que open_list non vide :
-#    a. Prendre le nœud avec le f le plus bas
-#    b. Si zone == goal → chemin trouvé, retourner path
-#    c. Pour chaque connexion depuis zone :
-#       - Calculer le voisin et le coût de déplacement
-#       - Calculer le turn d'arrivée (turn + coût)
-#       - Vérifier que le voisin est disponible dans reservation table
-#       - Vérifier que la connexion est disponible
-#       - Si disponible → ajouter à open_list
-#    d. Ajouter option "attendre sur place" si zone disponible au turn+1
-# 3. Si open_list vide → pas de chemin trouvé
+    def _reserve_path(self, path: list[tuple[Zone, int]]) -> None:
+        current_zone, current_turn = path[0]
+
+        for zone_turn in path[1:]:
+            next_zone, next_turn = zone_turn
+            self._res_table.reserve(next_zone.name, next_turn)
+
+            key = '-'.join(sorted([current_zone.name, next_zone.name]))
+            self._res_table.reserve(key, current_turn)
+
+            current_zone = next_zone
+            current_turn = next_turn

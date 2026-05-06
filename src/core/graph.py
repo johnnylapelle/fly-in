@@ -60,12 +60,16 @@ class Graph():
         # return the neighbours of a zone
         return self._adjacency.get(zone.name, [])
 
-    def cost(self, zone: Zone) -> int:
+    def cost(self, zone: Zone) -> float:
         if zone.type == "restricted":
             return 2
         elif zone.type == "blocked":
-            return 1000000
-        return 1
+            return 100000000000000000000000000000000
+        elif zone.type == "normal":
+            return 1
+        elif zone.type == "priority":
+            return 0.99
+        return 0
 
     def get_max_capacity(self, name: str) -> int:
         if name in self._connections:

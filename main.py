@@ -1,5 +1,6 @@
 import argparse
 import sys
+import traceback
 
 from PyQt6.QtWidgets import QApplication
 
@@ -21,13 +22,11 @@ def main():
         map_loader.parse()
         zones = map_loader.zones
         connections = map_loader.connections
-        nb_drone = map_loader.nb_drones
+        drones = map_loader.drones
 
         graph = Graph(zones, connections)
-        pathfinding = Pathfinding(graph)
-        path = pathfinding.space_time_a_star()
-        for _ in path:
-            print(_)
+        pathfinding = Pathfinding(graph, drones)
+        pathfinding.compute_path()
 
         app = QApplication([])
         window = MainWindow(graph)
@@ -51,7 +50,9 @@ def main():
         print(f"PermissionError: '{args.map}'", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        tb = traceback.extract_tb(e.__traceback__)[-1]
+        print(f"Error: {e}.", file=sys.stderr)
+        print(f"In {tb.name}, line {tb.lineno} in {tb.name}")
         sys.exit(1)
 
 

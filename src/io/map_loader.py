@@ -1,4 +1,5 @@
 from ..core.connection import Connection
+from ..core.drone import Drone
 from ..core.exception import ConfigFileError
 from ..core.zone import Zone
 
@@ -11,6 +12,7 @@ class MapLoader():
         self._is_end_hub = False
         self._is_hub = False
         self._is_connection = False
+        self._drones: list[Drone] = []
         self._zones: dict[str, Zone] = {}
         self._connections: dict[str, Connection] = {}
         self._valid_zone_type = [
@@ -28,6 +30,10 @@ class MapLoader():
     @property
     def connections(self) -> dict[str, Connection]:
         return self._connections
+
+    @property
+    def drones(self) -> list[Drone]:
+        return self._drones
 
     @property
     def nb_drones(self) -> int:
@@ -120,8 +126,12 @@ class MapLoader():
         if self._nb_drones <= 0:
             raise ConfigFileError(
                 f"line {self._lineno} - "
-                "(nb_drones) must be a valid positive int."
-            )
+                "(nb_drones) must be a valid positive int.")
+
+        # instantiate the drones
+        for i in range(self._nb_drones):
+            drone = Drone(i)
+            self._drones.append(drone)
 
     def _parse_hub(self, line: str, hub_type: str) -> None:
         # check if arg len is >= 5
