@@ -11,7 +11,7 @@ class Pathfinding:
         self._graph = graph
         self._drones = drones
         self._heuristic: dict[Zone, float] = {}
-        self._dijkstra_search()
+        self._reverse_dijkstra()
         print(self._heuristic)
         self._res_table = ReservationTable(self._graph)
 
@@ -23,8 +23,9 @@ class Pathfinding:
             drone.path = self._space_time_a_star()
             print(drone.path)
 
-    def _dijkstra_search(self) -> None:
+    def _reverse_dijkstra(self) -> None:
         start = self._graph.end
+        goal = self._graph.start
         frontier: PriorityQueue = PriorityQueue()
         frontier.put(start, 0)
         self._heuristic[start] = 0
@@ -32,10 +33,13 @@ class Pathfinding:
         while not frontier.empty():
             current = frontier.get()
 
-            for next in self._graph.get_neighbours(current):
-                next_zone = next.get_other(current)
+            for connection in self._graph.get_neighbours(current):
+                next_zone = connection.get_other(current)
                 new_cost = (self._heuristic[current]
                             + self._graph.cost(next_zone))
+
+                if next_zone.type == "blocked":
+                    continue
 
                 if (next_zone not in self._heuristic
                    or new_cost < self._heuristic[next_zone]):
@@ -43,12 +47,16 @@ class Pathfinding:
                     priority = new_cost
                     frontier.put(next_zone, priority)
 
+        if goal not in self._heuristic:
+            raise PathfindingError(
+                "(reverse_dijkstra) No solution found.")
+
     def _space_time_a_star(self) -> list[tuple[Zone, int]]:
 
         path: dict[tuple[Zone, int], tuple[Zone, int] | None] = {}
         cost_so_far: dict[tuple[Zone, int], int] = {}
         open_list: PriorityQueue = PriorityQueue()
-        # closed_set: set[tuple[Zone, int]] = set()
+        closed_set: set[tuple[Zone, int]] = set()
 
         start = self._graph.start
         goal = self._graph.end
@@ -61,9 +69,9 @@ class Pathfinding:
         while not open_list.empty():
             current, turn, g = open_list.get()
 
-            # if (current, turn) in closed_set:
-            #     continue
-            # closed_set.add((current, turn))
+            if (current, turn) in closed_set:
+                continue
+            closed_set.add((current, turn))
 
             current_state = (current, turn)
 
@@ -72,6 +80,10 @@ class Pathfinding:
 
             for connection in self._graph.get_neighbours(current):
                 next_zone = connection.get_other(current)
+
+                if next_zone.type == "blocked":
+                    continue
+
                 move_cost = self._graph.cost(next_zone)
                 arrival_turn = turn + round(move_cost)
                 new_cost = g + round(move_cost)
@@ -123,7 +135,7 @@ class Pathfinding:
         current: tuple[Zone, int] | None = (goal, turn)
 
         if (goal, turn) not in path:
-            raise PathfindingError("No path was found.")
+            raise PathfindingError("(space_time_a_star) No solution found.")
 
         while current is not None:
             correct_path.append(current)

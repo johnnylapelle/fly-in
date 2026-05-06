@@ -14,8 +14,12 @@ from src.pathfinding.pathfinding import Pathfinding
 def main():
     try:
         parser = argparse.ArgumentParser(description="Fly-in")
+        # parser.add_argument('--map', type=str,
+        #                     default='maps/medium/03_priority_puzzle.txt')
+        # parser.add_argument('--map', type=str,
+        #                     default='maps/medium/02_circular_loop.txt')
         parser.add_argument('--map', type=str,
-                            default='maps/medium/03_priority_puzzle.txt')
+                            default='maps/hard/01_maze_nightmare.txt')
         args = parser.parse_args()
 
         map_loader = MapLoader(args.map)
