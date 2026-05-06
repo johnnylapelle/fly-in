@@ -1,19 +1,20 @@
 from ..core.graph import Graph
 from ..core.zone import Zone
 from .priority_queue import PriorityQueue
-import heapq
+from ..core.exception import PathfindingError
+from .reservation_table import ReservationTable
 
 
 class Pathfinding:
     def __init__(self, graph: Graph) -> None:
         self._graph = graph
         self.heuristic: dict[Zone, int] = {}
-        self.reservations: dict[tuple[str, int], int] = {}
         self._dijkstra_search()
+        self.res_table = ReservationTable(self._graph)
 
     def _dijkstra_search(self) -> None:
         start = self._graph.end
-        frontier = PriorityQueue()
+        frontier: PriorityQueue = PriorityQueue()
         frontier.put(start, 0)
         self.heuristic[start] = 0
 
@@ -23,7 +24,7 @@ class Pathfinding:
             for next in self._graph.get_neighbours(current):
                 next_zone = next.get_other(current)
                 new_cost = (self.heuristic[current]
-                            + self._graph.cost(current))
+                            + self._graph.cost(next_zone))
 
                 if (next_zone not in self.heuristic
                    or new_cost < self.heuristic[next_zone]):
@@ -31,13 +32,15 @@ class Pathfinding:
                     priority = new_cost
                     frontier.put(next_zone, priority)
 
-    def space_time_a_star(self):
-        path: dict[tuple[Zone, int], tuple[str, int] | None] = {}
+    def space_time_a_star(self) -> list[tuple[Zone, int] | None]:
+
+        path: dict[tuple[Zone, int], tuple[Zone, int] | None] = {}
         cost_so_far: dict[tuple[Zone, int], int] = {}
-        open_list = PriorityQueue()
+        open_list: PriorityQueue = PriorityQueue()
         closed_set: set[tuple[Zone, int]] = set()
 
         start = self._graph.start
+        goal = self._graph.end
         start_state = (start, 0)
 
         cost_so_far[start_state] = 0
@@ -51,7 +54,9 @@ class Pathfinding:
                 continue
             closed_set.add((current, turn))
 
-            if current == self._graph.end:
+            current_state = (current, turn)
+
+            if current == goal:
                 break
 
             for connection in self._graph.get_neighbours(current):
@@ -60,18 +65,51 @@ class Pathfinding:
                 arrival_turn = turn + move_cost
                 new_cost = g + move_cost
 
-                current_state = (current, turn)
                 next_state = (next_zone, arrival_turn)
 
-                if (next_state not in cost_so_far or new_cost < cost_so_far[next_state]):
+                if not self.res_table.is_available(connection.key, turn):
+                    continue
+                if not self.res_table.is_available(
+                 next_zone.name, arrival_turn):
+                    continue
+
+                if (next_state not in cost_so_far
+                   or new_cost < cost_so_far[next_state]):
                     f = new_cost + self.heuristic[next_zone]
 
                     cost_so_far[next_state] = new_cost
-                    open_list.put((next_zone, arrival_turn, new_cost), priority=f)
+                    open_list.put(
+                        (next_zone, arrival_turn, new_cost), priority=f)
                     path[next_state] = current_state
 
-        return path, cost_so_far
+            if (current.is_start
+               or self.res_table.is_available(current.name, turn + 1)):
+                f = g + 1 + self.heuristic[current]
+                open_list.put(
+                    (current, turn + 1, g + 1), priority=f)
+                path[(current, turn + 1)] = (current, turn)
 
+        correct_path = self.reconstruct_path(path, turn, goal)
+        return correct_path
+
+    def reconstruct_path(
+            self,
+            path: dict[tuple[Zone, int], tuple[Zone, int] | None],
+            turn: int,
+            goal: Zone) -> list[tuple[Zone, int] | None]:
+
+        correct_path: list[tuple[Zone, int] | None] = []
+        current: tuple[Zone, int] | None = (goal, turn)
+
+        if (goal, turn) not in path:
+            raise PathfindingError("No path was found.")
+
+        while current is not None:
+            correct_path.append(current)
+            current = path[current]
+
+        correct_path.reverse()
+        return correct_path
 
 # 1. Initialise open_list avec (start_zone, turn=0)
 # 2. Tant que open_list non vide :
@@ -85,15 +123,3 @@ class Pathfinding:
 #       - Si disponible → ajouter à open_list
 #    d. Ajouter option "attendre sur place" si zone disponible au turn+1
 # 3. Si open_list vide → pas de chemin trouvé
-
-    def is_available(self, name: str, turn: int) -> bool:
-        max_capacity = self._graph.get_max_capacity(name)
-        current = self.reservations.get((name, turn), 0)
-        if current >= max_capacity:
-            return False
-        return True
-
-    def reserve(self, name: str, turn: int) -> None:
-        current = self.reservations.get((name, turn), 0)
-        current += 1
-

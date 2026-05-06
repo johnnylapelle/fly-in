@@ -1,6 +1,5 @@
 import heapq
 from itertools import count
-from ..core.zone import Zone
 from typing import TypeVar, Generic
 T = TypeVar('T')
 

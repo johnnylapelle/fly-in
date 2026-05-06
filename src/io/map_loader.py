@@ -293,6 +293,7 @@ class MapLoader():
                 "(e.g., a-b and b-a are considered duplicates).")
         else:
             self._connections[key] = Connection(
+                key=key,
                 zone_a=zone_a,
                 zone_b=zone_b,
                 max_capacity=max_link_cap_int

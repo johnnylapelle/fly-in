@@ -3,7 +3,7 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from src.core.exception import ConfigFileError
+from src.core.exception import ConfigFileError, GraphError, PathfindingError
 from src.core.graph import Graph
 from src.gui.main_window import MainWindow
 from src.io.map_loader import MapLoader
@@ -25,14 +25,9 @@ def main():
 
         graph = Graph(zones, connections)
         pathfinding = Pathfinding(graph)
-        path, cost_so_far = pathfinding.space_time_a_star()
-        print("path")
-        for key, value in path.items():
-            print(f"{key}: {value}")
-
-        print("\ncost_so_far:")
-        for key, value in cost_so_far.items():
-            print(f"{key}: {value}")
+        path = pathfinding.space_time_a_star()
+        for _ in path:
+            print(_)
 
         app = QApplication([])
         window = MainWindow(graph)
@@ -41,6 +36,12 @@ def main():
 
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)
+        sys.exit(1)
+    except GraphError as e:
+        print(f"GraphError: {e}", file=sys.stderr)
+        sys.exit(1)
+    except PathfindingError as e:
+        print(f"PathfindingError: {e}", file=sys.stderr)
         sys.exit(1)
     except FileNotFoundError:
         print("FileNotFoundError: "
