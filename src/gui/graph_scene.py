@@ -11,18 +11,18 @@ class GraphScene(QGraphicsScene):
 
         self.graph = graph
         self._zones: list[ZoneItem] = []
-        self.connections: list[ConnectionItem] = []
+        self._connections: list[ConnectionItem] = []
         self._labels_visible: bool = True
 
         for connection in self.graph.connections.values():
-            item = ConnectionItem(connection)
-            self.connections.append(item)
-            self.addItem(item)
+            co_item = ConnectionItem(connection)
+            self._connections.append(co_item)
+            self.addItem(co_item)
 
         for zone in self.graph.zones.values():
-            item = ZoneItem(zone, self._on_zone_clicked)
-            self._zones.append(item)
-            self.addItem(item)
+            zone_item = ZoneItem(zone, self._on_zone_clicked)
+            self._zones.append(zone_item)
+            self.addItem(zone_item)
 
     def toggle_labels(self) -> None:
         self._labels_visible = not self._labels_visible

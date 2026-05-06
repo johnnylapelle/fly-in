@@ -6,7 +6,7 @@ class Drone:
     def __init__(self, id: int):
         self._id: int = id
         self._position: Zone | Connection | None = None
-        self._path: list[tuple[Zone, int] | None] = []
+        self._path: list[tuple[Zone, int]] = []
         self._is_arrived: bool = False
 
     @property
@@ -22,11 +22,11 @@ class Drone:
         self._position = new_pos
 
     @property
-    def path(self) -> list[tuple[Zone, int] | None]:
+    def path(self) -> list[tuple[Zone, int]]:
         return self._path
 
     @path.setter
-    def path(self, path: list[tuple[Zone, int] | None]) -> None:
+    def path(self, path: list[tuple[Zone, int]]) -> None:
         self._path = path
 
     @property
@@ -34,5 +34,5 @@ class Drone:
         return self._is_arrived
 
     @is_arrived.setter
-    def is_arrived(self) -> None:
-        self._is_arrived = True
+    def is_arrived(self, x: bool) -> None:
+        self._is_arrived = x

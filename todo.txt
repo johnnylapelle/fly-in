@@ -13,7 +13,6 @@ GUI:
 
 
 TODO GLOBALE:
-- Pathfinder (algo)
 - Simulation engine
 - GUI
 - Output format
@@ -21,6 +20,7 @@ TODO GLOBALE:
 - Parsing - DONE!
 - Construire le Graph - DONE!
 - Class drone - DONE!
+- Pathfinder (algo) - DONE!
 
 
 Idées:

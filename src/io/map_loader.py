@@ -130,7 +130,7 @@ class MapLoader():
 
         # instantiate the drones
         for i in range(self._nb_drones):
-            drone = Drone(i)
+            drone = Drone(i + 1)
             self._drones.append(drone)
 
     def _parse_hub(self, line: str, hub_type: str) -> None:

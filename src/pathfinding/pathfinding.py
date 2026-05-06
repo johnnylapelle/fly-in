@@ -12,7 +12,6 @@ class Pathfinding:
         self._drones = drones
         self._heuristic: dict[Zone, float] = {}
         self._reverse_dijkstra()
-        print(self._heuristic)
         self._res_table = ReservationTable(self._graph)
 
     def compute_path(self):

@@ -9,17 +9,18 @@ from src.core.graph import Graph
 from src.gui.main_window import MainWindow
 from src.io.map_loader import MapLoader
 from src.pathfinding.pathfinding import Pathfinding
+from src.simulation.simulator import Simulator
 
 
 def main():
     try:
         parser = argparse.ArgumentParser(description="Fly-in")
-        # parser.add_argument('--map', type=str,
-        #                     default='maps/medium/03_priority_puzzle.txt')
+        parser.add_argument('--map', type=str,
+                            default='maps/medium/03_priority_puzzle.txt')
         # parser.add_argument('--map', type=str,
         #                     default='maps/medium/02_circular_loop.txt')
-        parser.add_argument('--map', type=str,
-                            default='maps/hard/01_maze_nightmare.txt')
+        # parser.add_argument('--map', type=str,
+        #                     default='maps/hard/01_maze_nightmare.txt')
         args = parser.parse_args()
 
         map_loader = MapLoader(args.map)
@@ -31,6 +32,9 @@ def main():
         graph = Graph(zones, connections)
         pathfinding = Pathfinding(graph, drones)
         pathfinding.compute_path()
+
+        simulator = Simulator(drones, graph)
+        simulator.simulate()
 
         app = QApplication([])
         window = MainWindow(graph)
