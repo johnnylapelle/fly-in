@@ -109,7 +109,7 @@ class Simulator():
 
             anim.setEndValue(self.get_pose(end_node))
 
-            anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
 
             group.addAnimation(anim)
 
