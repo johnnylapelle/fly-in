@@ -2,16 +2,19 @@ from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget)
 
 from ..core.graph import Graph
+from ..core.drone import Drone
+from ..simulation.simulator import Simulator
 from .graph_scene import GraphScene
 from .graph_view import GraphView
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, graph: Graph) -> None:
+    def __init__(self, graph: Graph, drones: list[Drone]) -> None:
         super().__init__()
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
-        self._scene = GraphScene(graph)
+        self._scene = GraphScene(graph, drones)
+        self._simulator = Simulator(graph, drones)
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -38,6 +41,16 @@ class MainWindow(QMainWindow):
         button_show_hide_desc = QPushButton("Show/Hide description")
         button_show_hide_desc.clicked.connect(self._scene.toggle_labels)
         layout.addWidget(button_show_hide_desc)
+
+        button_simulate = QPushButton("Simulate")
+        button_simulate.clicked.connect(self._simulator.simulate)
+        layout.addWidget(button_simulate)
+
+        button_next = QPushButton("Next")
+        layout.addWidget(button_next)
+
+        button_prev = QPushButton("Prev")
+        layout.addWidget(button_prev)
 
         layout.addStretch()
         panel.setLayout(layout)

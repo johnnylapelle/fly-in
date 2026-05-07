@@ -9,7 +9,6 @@ from src.core.graph import Graph
 from src.gui.main_window import MainWindow
 from src.io.map_loader import MapLoader
 from src.pathfinding.pathfinding import Pathfinding
-from src.simulation.simulator import Simulator
 
 
 def main():
@@ -33,11 +32,8 @@ def main():
         pathfinding = Pathfinding(graph, drones)
         pathfinding.compute_path()
 
-        simulator = Simulator(drones, graph)
-        simulator.simulate()
-
         app = QApplication([])
-        window = MainWindow(graph)
+        window = MainWindow(graph, drones)
         window.show()
         app.exec()
 
@@ -60,7 +56,7 @@ def main():
     except Exception as e:
         tb = traceback.extract_tb(e.__traceback__)[-1]
         print(f"Error: {e}.", file=sys.stderr)
-        print(f"In {tb.name}, line {tb.lineno} in {tb.name}")
+        print(f"In {tb.name}, line {tb.lineno} in {tb.filename}.")
         sys.exit(1)
 
 
