@@ -1,6 +1,7 @@
 Todo:
 	- Simulation within indexes
 	- reflechir a comment print le nb de drones dans chaque zone
+	- mode "libre"
 
 GUI:
 	- Afficher drones
