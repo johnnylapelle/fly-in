@@ -1,3 +1,6 @@
+from typing import Union
+
+from ..core.connection import Connection
 from ..core.drone import Drone
 from ..core.exception import PathfindingError
 from ..core.graph import Graph
@@ -6,7 +9,11 @@ from .priority_queue import PriorityQueue
 from .reservation_table import ReservationTable
 
 
+StateKey = Union[Zone | Connection]
+
+
 class Pathfinding:
+
     def __init__(self, graph: Graph, drones: list[Drone]) -> None:
         self._graph = graph
         self._drones = drones
@@ -50,12 +57,12 @@ class Pathfinding:
             raise PathfindingError(
                 "(reverse_dijkstra) No solution found.")
 
-    def _space_time_a_star(self) -> list[tuple[Zone, int]]:
+    def _space_time_a_star(self) -> list[tuple[StateKey, int]]:
 
-        path: dict[tuple[Zone, int], tuple[Zone, int] | None] = {}
-        cost_so_far: dict[tuple[Zone, int], int] = {}
+        path: dict[tuple[StateKey, int], tuple[StateKey, int] | None] = {}
+        cost_so_far: dict[tuple[StateKey, int], int] = {}
         open_list: PriorityQueue = PriorityQueue()
-        closed_set: set[tuple[Zone, int]] = set()
+        closed_set: set[tuple[StateKey, int]] = set()
 
         start = self._graph.start
         goal = self._graph.end
@@ -103,8 +110,15 @@ class Pathfinding:
                     cost_so_far[next_state] = new_cost
                     open_list.put(
                         (next_zone, arrival_turn, new_cost), priority=f)
-                    path[next_state] = current_state
 
+                    if next_zone.type == "restricted":
+                        transit_state = (connection, turn + 1)
+                        path[transit_state] = (current_state)
+                        path[next_state] = transit_state
+                    else:
+                        path[next_state] = current_state
+
+            # wait action
             wait_state = (current, turn + 1)
 
             if (current.is_start
@@ -126,12 +140,13 @@ class Pathfinding:
 
     def _reconstruct_path(
             self,
-            path: dict[tuple[Zone, int], tuple[Zone, int] | None],
+            path: dict[tuple[StateKey, int],
+                       tuple[StateKey, int] | None],
             turn: int,
-            goal: Zone) -> list[tuple[Zone, int]]:
+            goal: Zone) -> list[tuple[StateKey, int]]:
 
-        correct_path: list[tuple[Zone, int]] = []
-        current: tuple[Zone, int] | None = (goal, turn)
+        correct_path: list[tuple[StateKey, int]] = []
+        current: tuple[StateKey, int] | None = (goal, turn)
 
         if (goal, turn) not in path:
             raise PathfindingError("(space_time_a_star) No solution found.")
@@ -143,15 +158,10 @@ class Pathfinding:
         correct_path.reverse()
         return correct_path
 
-    def _reserve_path(self, path: list[tuple[Zone, int]]) -> None:
-        current_zone, current_turn = path[0]
-
-        for zone_turn in path[1:]:
-            next_zone, next_turn = zone_turn
-            self._res_table.reserve(next_zone.name, next_turn)
-
-            key = '-'.join(sorted([current_zone.name, next_zone.name]))
-            self._res_table.reserve(key, current_turn)
-
-            current_zone = next_zone
-            current_turn = next_turn
+    def _reserve_path(self, path: list[tuple[StateKey, int]]) -> None:
+        for item, turn in path:
+            if isinstance(item, Zone):
+                self._res_table.reserve(item.name, turn)
+            else:
+                print(f"Connection={item.key}, turn={turn}")
+                self._res_table.reserve(item.key, turn)

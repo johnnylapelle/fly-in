@@ -1,7 +1,6 @@
 Todo:
-	- Pathfinder
-	- Afficher drones
-	- faire transiter par la connection pour les zones restricted
+	- Simulation within indexes
+	- reflechir a comment print le nb de drones dans chaque zone
 
 GUI:
 	- Afficher drones

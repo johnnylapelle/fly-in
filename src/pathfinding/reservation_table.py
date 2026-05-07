@@ -10,7 +10,9 @@ class ReservationTable:
         max_capacity = self._graph.get_max_capacity(name)
         current = self.reservations.get((name, turn), 0)
         if current >= max_capacity:
+            # print(f"name={name}, turn={turn} FALSE")
             return False
+        # print(f"name={name}, turn={turn} TRUE")
         return True
 
     def reserve(self, name: str, turn: int) -> None:
