@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QGraphicsScene
 
-from ..core.graph import Graph
 from ..core.drone import Drone
+from ..core.graph import Graph
 from .connection_item import ConnectionItem
-from .zone_item import ZoneItem
 from .drone_item import DroneItem
+from .zone_item import ZoneItem
 
 
 class GraphScene(QGraphicsScene):
@@ -32,6 +32,10 @@ class GraphScene(QGraphicsScene):
             drone_item = DroneItem(drone)
             self._drones_items.append(drone_item)
             self.addItem(drone_item)
+
+    @property
+    def drones_items(self) -> list[DroneItem]:
+        return self._drones_items
 
     def toggle_labels(self) -> None:
         self._labels_visible = not self._labels_visible

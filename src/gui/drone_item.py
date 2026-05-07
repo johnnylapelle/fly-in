@@ -1,26 +1,64 @@
 # from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QGraphicsPixmapItem
+import random
 
+from PyQt6.QtGui import QPixmap, QPainter
+from PyQt6.QtWidgets import QGraphicsObject
+from PyQt6.QtCore import QRectF
+
+from ..core.connection import Connection
 from ..core.drone import Drone
-# from ..core.connection import Connection
-# from .utils import SCALE
+from ..core.zone import Zone
+from .utils import SCALE
 
 
-class DroneItem(QGraphicsPixmapItem):
+class DroneItem(QGraphicsObject):
     def __init__(self, drone: Drone) -> None:
         super().__init__()
         self.drone = drone
 
-        pixmap = QPixmap("pngegg100.png")
-        self.setPixmap(pixmap)
-        rect = self.boundingRect()
+        self.pixmap = QPixmap("pngegg100.png")
+        self.rect = QRectF(self.pixmap.rect())
 
-        # if isinstance(self.drone.position, Drone):
-        #     self.setPos(
-        #         self.drone.position.x * SCALE,
-        #         self.drone.position.y * SCALE)
+        if isinstance(self.drone.position, Zone):
+            zone = self.drone.position
+            self.setPos(
+                zone.x * SCALE,
+                zone.y * SCALE)
 
-        self.setPos(
-            -rect.width() / 2,
-            -rect.height() / 2)
+        self.setRotation(random.randint(0, 360))
+
+    def boundingRect(self):
+        return QRectF(
+            -self.rect.width() / 2,
+            -self.rect.height() / 2,
+            self.rect.width(),
+            self.rect.height()
+        )
+
+    def paint(self, painter: QPainter | None, option, widget=None):
+        if isinstance(painter, QPainter):
+            painter.drawPixmap(
+                int(-self.rect.width() / 2),
+                int(-self.rect.height() / 2),
+                self.pixmap
+            )
+
+    def move(self) -> None:
+        if isinstance(self.drone.position, Zone):
+            zone = self.drone.position
+
+            self.setPos(
+                zone.x * SCALE,
+                zone.y * SCALE)
+
+        elif isinstance(self.drone.position, Connection):
+            co = self.drone.position
+            zone_a = co.zone_a
+            zone_b = co.zone_b
+
+            x = zone_a.x + zone_b.x / 2
+            y = zone_a.y + zone_b.y / 2
+
+            self.setPos(
+                x * SCALE,
+                y * SCALE)

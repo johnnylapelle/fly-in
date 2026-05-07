@@ -1,9 +1,10 @@
 from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget)
 
-from ..core.graph import Graph
 from ..core.drone import Drone
+from ..core.graph import Graph
 from ..simulation.simulator import Simulator
+from .drone_item import DroneItem
 from .graph_scene import GraphScene
 from .graph_view import GraphView
 
@@ -14,7 +15,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
         self._scene = GraphScene(graph, drones)
-        self._simulator = Simulator(graph, drones)
+        self.drones_items: list[DroneItem] = self._scene.drones_items
+        self._simulator = Simulator(graph, drones, self.drones_items)
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -47,10 +49,16 @@ class MainWindow(QMainWindow):
         layout.addWidget(button_simulate)
 
         button_next = QPushButton("Next")
+        button_next.clicked.connect(self._simulator.increase_turn)
         layout.addWidget(button_next)
 
         button_prev = QPushButton("Prev")
+        button_prev.clicked.connect(self._simulator.decrease_turn)
         layout.addWidget(button_prev)
+
+        button_reset = QPushButton("Reset")
+        button_reset.clicked.connect(self._simulator.reset_simulation)
+        layout.addWidget(button_reset)
 
         layout.addStretch()
         panel.setLayout(layout)

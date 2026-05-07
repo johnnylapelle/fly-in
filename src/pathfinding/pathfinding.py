@@ -8,7 +8,6 @@ from ..core.zone import Zone
 from .priority_queue import PriorityQueue
 from .reservation_table import ReservationTable
 
-
 StateKey = Union[Zone | Connection]
 
 
@@ -27,7 +26,6 @@ class Pathfinding:
         for drone in self._drones:
             drone.position = start
             drone.path = self._space_time_a_star()
-            print(drone.path)
 
     def _reverse_dijkstra(self) -> None:
         start = self._graph.end
@@ -163,5 +161,4 @@ class Pathfinding:
             if isinstance(item, Zone):
                 self._res_table.reserve(item.name, turn)
             else:
-                print(f"Connection={item.key}, turn={turn}")
                 self._res_table.reserve(item.key, turn)

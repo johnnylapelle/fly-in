@@ -1,7 +1,7 @@
 Todo:
 	- Simulation within indexes
 	- reflechir a comment print le nb de drones dans chaque zone
-	- mode "libre"
+	- mode "libre" genre bac à sable pour tester les maps soi-meme
 
 GUI:
 	- Afficher drones
