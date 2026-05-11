@@ -8,6 +8,9 @@ from .zone_item import ZoneItem
 
 
 class GraphScene(QGraphicsScene):
+    # def __init__(self):
+    #     super().__init__()
+
     def __init__(self, graph: Graph, drones: list[Drone]):
         super().__init__()
 
