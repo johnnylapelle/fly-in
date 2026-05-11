@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
 
         self.btn_show_hide_desc = QPushButton("Show/Hide description")
         self.btn_show_hide_desc.clicked.connect(
-            lambda: self._scene.toggle_labels)
+            lambda: self._scene.toggle_labels())
         layout.addWidget(self.btn_show_hide_desc)
 
         self.btn_simulate = QPushButton("Simulate")
