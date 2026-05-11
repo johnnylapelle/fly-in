@@ -12,6 +12,7 @@ class Zone():
         self.color = color
         self.type = zone_type
         self.max_drones = max_drones
+        self.current_nb_drone = 0
 
     def __repr__(self):
         return f"{self.name}"

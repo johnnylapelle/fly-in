@@ -35,9 +35,10 @@ class MainWindow(QMainWindow):
 
         self._pathfinder = Pathfinding(self._graph, self._drones)
         self._pathfinder.compute_path()
+        self._res_table = self._pathfinder.res_table
 
         self._simulator = Simulator(
-            self._graph, self._drones, self.drones_items)
+            self._graph, self._drones, self.drones_items, self._res_table)
 
     def _setup_ui(self) -> None:
         # central widget that contain the layout

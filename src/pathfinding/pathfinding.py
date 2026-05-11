@@ -12,13 +12,16 @@ StateKey = Union[Zone | Connection]
 
 
 class Pathfinding:
-
     def __init__(self, graph: Graph, drones: list[Drone]) -> None:
         self._graph = graph
         self._drones = drones
         self._heuristic: dict[Zone, float] = {}
         self._reverse_dijkstra()
         self._res_table = ReservationTable(self._graph)
+
+    @property
+    def res_table(self) -> ReservationTable:
+        return self._res_table
 
     def compute_path(self):
         start = self._graph.start

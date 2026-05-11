@@ -3,6 +3,7 @@ from typing import Union
 from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve,
                           QPointF, QPropertyAnimation)
 
+from ..pathfinding.reservation_table import ReservationTable
 from ..core.connection import Connection
 from ..core.drone import Drone
 from ..core.graph import Graph
@@ -15,10 +16,12 @@ StateKey = Union[Zone, Connection]
 
 class Simulator():
     def __init__(self, graph: Graph, drones: list[Drone],
-                 drones_items: list[DroneItem]) -> None:
+                 drones_items: list[DroneItem],
+                 res_table: ReservationTable) -> None:
         self._drones: list[Drone] = drones
         self._graph: Graph = graph
         self._drones_items = drones_items
+        self._res_table = res_table
 
         self._turn: int = 0
         self._max_turn: int = 0
@@ -128,6 +131,9 @@ class Simulator():
 
         if self._pending_moves == 0:
             print(" ".join(self._current_logs))
+
+            # occupency = self._res_table.get_node_occupency(self._turn)
+            # print("\n".join(occupency))
 
             if self.is_playing:
                 self._play_next_turn()
