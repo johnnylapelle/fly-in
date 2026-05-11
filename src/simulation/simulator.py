@@ -114,7 +114,7 @@ class Simulator():
             group.addAnimation(anim)
 
             pause = QPauseAnimation()
-            pause.setDuration(200)
+            pause.setDuration(300)
             group.addAnimation(pause)
 
         self.animations.append(group)
