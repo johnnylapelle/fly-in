@@ -1,9 +1,9 @@
 # from PyQt6.QtCore import Qt
 import random
 
-from PyQt6.QtGui import QPixmap, QPainter
-from PyQt6.QtWidgets import QGraphicsObject
 from PyQt6.QtCore import QRectF
+from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtWidgets import QGraphicsObject
 
 from ..core.connection import Connection
 from ..core.drone import Drone

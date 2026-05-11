@@ -1,13 +1,13 @@
-from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
-                             QVBoxLayout, QWidget, QFileDialog, QMessageBox)
+from PyQt6.QtWidgets import (QFileDialog, QHBoxLayout, QMainWindow,
+                             QMessageBox, QPushButton, QVBoxLayout, QWidget)
 
-from ..io.map_loader import MapLoader
+from ..core.exception import ConfigFileError
 from ..core.graph import Graph
+from ..io.map_loader import MapLoader
+from ..pathfinding.pathfinding import Pathfinding
 from ..simulation.simulator import Simulator
 from .graph_scene import GraphScene
 from .graph_view import GraphView
-from ..core.exception import ConfigFileError
-from ..pathfinding.pathfinding import Pathfinding
 
 
 class MainWindow(QMainWindow):
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
 
         # layout that contain the view and the panel
         layout = QHBoxLayout()
-        layout.addWidget(self._create_view(), stretch=3)
+        layout.addWidget(self._create_view(), stretch=4)
         layout.addWidget(self._create_panel(), stretch=1)
 
         central.setLayout(layout)

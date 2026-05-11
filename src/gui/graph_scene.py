@@ -41,6 +41,7 @@ class GraphScene(QGraphicsScene):
         return self._drones_items
 
     def toggle_labels(self) -> None:
+        print("yes")
         self._labels_visible = not self._labels_visible
         for zone in self._zones_items:
             zone.set_label_visible(self._labels_visible)

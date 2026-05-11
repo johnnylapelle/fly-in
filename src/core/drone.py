@@ -1,6 +1,7 @@
+from typing import Union
+
 from .connection import Connection
 from .zone import Zone
-from typing import Union
 
 StateKey = Union[Zone | Connection]
 

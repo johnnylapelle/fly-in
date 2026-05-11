@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication
 from src.core.exception import ConfigFileError, GraphError, PathfindingError
 # from src.core.graph import Graph
 from src.gui.main_window import MainWindow
+
 # from src.io.map_loader import MapLoader
 # from src.pathfinding.pathfinding import Pathfinding
 

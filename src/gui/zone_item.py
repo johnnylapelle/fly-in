@@ -20,7 +20,7 @@ class ZoneItem(QGraphicsEllipseItem):
 
         # display zone informations
         self.label = QGraphicsTextItem(self)
-        self.label.setTextWidth(100)
+        self.label.setTextWidth(200)
         self.label.setHtml(
             f"<center>{self._zone.name}<br>"
             f"{self._zone.type}<br>"
