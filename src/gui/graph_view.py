@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QGraphicsView
 
 
 class GraphView(QGraphicsView):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)

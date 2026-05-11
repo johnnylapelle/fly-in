@@ -9,7 +9,8 @@ from .utils import RADIUS, SCALE
 
 
 class ZoneItem(QGraphicsEllipseItem):
-    def __init__(self, zone: Zone, on_click: Callable) -> None:
+    def __init__(self,
+                 zone: Zone, on_click: Callable[['ZoneItem'], None]) -> None:
         QGraphicsEllipseItem.__init__(
             self, -RADIUS / 2, -RADIUS / 2, RADIUS, RADIUS)
 

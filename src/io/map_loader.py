@@ -5,15 +5,15 @@ from ..core.zone import Zone
 
 
 class MapLoader():
-    def __init__(self):
+    def __init__(self) -> None:
         self._nb_drones = 0
         self._is_start_hub = False
         self._is_end_hub = False
         self._is_hub = False
         self._is_connection = False
-        self._drones = []
-        self._zones = {}
-        self._connections = {}
+        self._drones: list[Drone] = []
+        self._zones: dict[str, Zone] = {}
+        self._connections: dict[str, Connection] = {}
         self._valid_zone_type = [
             "normal", "blocked", "restricted", "priority"]
         self._valid_metadatas_co = [
@@ -45,7 +45,7 @@ class MapLoader():
         self._validate()
         self._lineno = 0
 
-    def _parse_map(self, file: str):
+    def _parse_map(self, file: str) -> None:
         with open(file, 'r') as f:
             for line in f:
                 self._lineno += 1
@@ -225,7 +225,7 @@ class MapLoader():
         else:
             self._zones[zone.name] = zone
 
-    def _parse_connection(self, line: str):
+    def _parse_connection(self, line: str) -> None:
         # get the datas and check the format
         if not self._is_start_hub or not self._is_end_hub:
             raise ConfigFileError(
@@ -310,7 +310,7 @@ class MapLoader():
                 max_capacity=max_link_cap_int
             )
 
-    def _parse_metadatas(self, line,
+    def _parse_metadatas(self, line: str,
                          valid_keys: list[str]) -> dict[str, str]:
         # parse the metadatas and check if they are valid
         metadatas: dict[str, str] = {}
@@ -335,7 +335,7 @@ class MapLoader():
 
         return metadatas
 
-    def _validate(self):
+    def _validate(self) -> None:
         # check if there is one start_hub/end_hub
         if self._is_start_hub is False:
             raise ConfigFileError(
@@ -350,7 +350,7 @@ class MapLoader():
                 "nb_drones parameter is mandatory:\n"
                 "   nb_drones: <number>")
 
-    def _reset(self):
+    def _reset(self) -> None:
         self._nb_drones = 0
         self._is_start_hub = False
         self._is_end_hub = False

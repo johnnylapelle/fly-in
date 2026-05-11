@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         self.map_loader.parse("maps/easy/01_linear_path.txt")
         self._load_state()
 
-    def _load_state(self):
+    def _load_state(self) -> None:
         self._drones = self.map_loader.drones
         self._zones = self.map_loader.zones
         self._connections = self.map_loader.connections
@@ -92,14 +92,14 @@ class MainWindow(QMainWindow):
         panel.setLayout(layout)
         return panel
 
-    def _load_map_button_clicked(self):
+    def _load_map_button_clicked(self) -> None:
         try:
             self._load_map()
         except ConfigFileError as e:
             print(e)
             QMessageBox.warning(self, "ConfigFileError", str(e))
 
-    def _load_map(self):
+    def _load_map(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             parent=self,
             caption="Load a map",

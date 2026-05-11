@@ -14,5 +14,5 @@ class Zone():
         self.max_drones = max_drones
         self.current_nb_drone = 0
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.name}"

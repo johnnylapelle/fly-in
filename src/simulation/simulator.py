@@ -34,7 +34,7 @@ class Simulator():
 
         self._get_max_turn()
 
-    def _simulate(self):
+    def _simulate(self) -> None:
         self.is_playing = True
         self._reset_simulation()
         self._play_next_turn()
@@ -51,7 +51,7 @@ class Simulator():
         self._turn += n
         self._animate_step(moves)
 
-    def _play_next_turn(self):
+    def _play_next_turn(self) -> None:
         if self._turn >= self._max_turn:
             return
 

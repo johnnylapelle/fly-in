@@ -10,6 +10,8 @@ from ..core.drone import Drone
 from ..core.zone import Zone
 from .utils import SCALE
 
+from typing import Any
+
 
 class DroneItem(QGraphicsObject):
     def __init__(self, drone: Drone) -> None:
@@ -27,7 +29,7 @@ class DroneItem(QGraphicsObject):
 
         self.setRotation(random.randint(0, 360))
 
-    def boundingRect(self):
+    def boundingRect(self) -> QRectF:
         return QRectF(
             -self.rect.width() / 2,
             -self.rect.height() / 2,
@@ -35,7 +37,10 @@ class DroneItem(QGraphicsObject):
             self.rect.height()
         )
 
-    def paint(self, painter: QPainter | None, option, widget=None):
+    def paint(self,
+              painter: QPainter | None,
+              option: Any, widget: Any = None) -> None:
+
         if isinstance(painter, QPainter):
             painter.drawPixmap(
                 int(-self.rect.width() / 2),

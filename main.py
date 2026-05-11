@@ -12,7 +12,7 @@ from src.gui.main_window import MainWindow
 # from src.pathfinding.pathfinding import Pathfinding
 
 
-def main():
+def main() -> None:
     try:
         app = QApplication([])
         window = MainWindow()
