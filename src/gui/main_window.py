@@ -69,20 +69,22 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.btn_show_hide_desc)
 
         self.btn_simulate = QPushButton("Simulate")
-        self.btn_simulate.clicked.connect(lambda: self._simulator.simulate())
+        self.btn_simulate.clicked.connect(lambda: self._simulator._simulate())
         layout.addWidget(self.btn_simulate)
 
         self.btn_next = QPushButton("Next")
-        self.btn_next.clicked.connect(lambda: self._simulator.increase_turn())
+        self.btn_next.clicked.connect(
+            lambda: self._simulator._increase_decrease_turn(1))
         layout.addWidget(self.btn_next)
 
         self.btn_prev = QPushButton("Prev")
-        self.btn_prev.clicked.connect(lambda: self._simulator.decrease_turn())
+        self.btn_prev.clicked.connect(
+            lambda: self._simulator._increase_decrease_turn(-1))
         layout.addWidget(self.btn_prev)
 
         self.btn_reset = QPushButton("Reset")
         self.btn_reset.clicked.connect(
-            lambda: self._simulator.reset_simulation())
+            lambda: self._simulator._reset_simulation())
         layout.addWidget(self.btn_reset)
 
         layout.addStretch()
