@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
             self._load_map()
         except ConfigFileError as e:
             print(e)
-            QMessageBox.warning(self, "Error", str(e))
+            QMessageBox.warning(self, "ConfigFileError", str(e))
 
     def _load_map(self):
         path, _ = QFileDialog.getOpenFileName(

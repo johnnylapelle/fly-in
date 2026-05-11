@@ -70,8 +70,15 @@ class Simulator():
         self._move_all_drone()
 
     def increase_turn(self) -> None:
-        if self._turn < self._max_turn:
-            self._turn += 1
+        if self._turn >= self._max_turn:
+            return
+
+        moves = []
+        for drone in self._drones:
+            try:
+                start_node, _ = drone.path[]
+
+        self._turn += 1
         self._execute_turn_and_move()
 
     def decrease_turn(self) -> None:
