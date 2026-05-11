@@ -2,13 +2,12 @@ from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget, QFileDialog, QMessageBox)
 
 from ..io.map_loader import MapLoader
-# from ..core.drone import Drone
 from ..core.graph import Graph
 from ..simulation.simulator import Simulator
-# from .drone_item import DroneItem
 from .graph_scene import GraphScene
 from .graph_view import GraphView
 from ..core.exception import ConfigFileError
+from ..pathfinding.pathfinding import Pathfinding
 
 
 class MainWindow(QMainWindow):
@@ -16,8 +15,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
-        self.map_loader = MapLoader()
         self._setup_ui()
+        self.map_loader = MapLoader()
+        self.map_loader.parse("maps/easy/01_linear_path.txt")
+        self._load_state()
 
     def _load_state(self):
         self._drones = self.map_loader.drones
@@ -32,14 +33,11 @@ class MainWindow(QMainWindow):
         self._view.setScene(self._scene)
         self.drones_items = self._scene.drones_items
 
+        self._pathfinder = Pathfinding(self._graph, self._drones)
+        self._pathfinder.compute_path()
+
         self._simulator = Simulator(
             self._graph, self._drones, self.drones_items)
-
-        self.button_show_hide_desc.clicked.connect(self._scene.toggle_labels)
-        self.button_simulate.clicked.connect(self._simulator.simulate)
-        self.button_next.clicked.connect(self._simulator.increase_turn)
-        self.button_prev.clicked.connect(self._simulator.decrease_turn)
-        self.button_reset.clicked.connect(self._simulator.reset_simulation)
 
     def _setup_ui(self) -> None:
         # central widget that contain the layout
@@ -61,24 +59,31 @@ class MainWindow(QMainWindow):
         panel = QWidget()
         layout = QVBoxLayout()
 
-        self.button_load_map = QPushButton("Load a map")
-        self.button_load_map.clicked.connect(self._load_map_button_clicked)
-        layout.addWidget(self.button_load_map)
+        self.btn_load_map = QPushButton("Load a map")
+        self.btn_load_map.clicked.connect(self._load_map_button_clicked)
+        layout.addWidget(self.btn_load_map)
 
-        self.button_show_hide_desc = QPushButton("Show/Hide description")
-        layout.addWidget(self.button_show_hide_desc)
+        self.btn_show_hide_desc = QPushButton("Show/Hide description")
+        self.btn_show_hide_desc.clicked.connect(
+            lambda: self._scene.toggle_labels)
+        layout.addWidget(self.btn_show_hide_desc)
 
-        self.button_simulate = QPushButton("Simulate")
-        layout.addWidget(self.button_simulate)
+        self.btn_simulate = QPushButton("Simulate")
+        self.btn_simulate.clicked.connect(lambda: self._simulator.simulate())
+        layout.addWidget(self.btn_simulate)
 
-        self.button_next = QPushButton("Next")
-        layout.addWidget(self.button_next)
+        self.btn_next = QPushButton("Next")
+        self.btn_next.clicked.connect(lambda: self._simulator.increase_turn())
+        layout.addWidget(self.btn_next)
 
-        self.button_prev = QPushButton("Prev")
-        layout.addWidget(self.button_prev)
+        self.btn_prev = QPushButton("Prev")
+        self.btn_prev.clicked.connect(lambda: self._simulator.decrease_turn())
+        layout.addWidget(self.btn_prev)
 
-        self.button_reset = QPushButton("Reset")
-        layout.addWidget(self.button_reset)
+        self.btn_reset = QPushButton("Reset")
+        self.btn_reset.clicked.connect(
+            lambda: self._simulator.reset_simulation())
+        layout.addWidget(self.btn_reset)
 
         layout.addStretch()
         panel.setLayout(layout)
@@ -86,16 +91,16 @@ class MainWindow(QMainWindow):
 
     def _load_map_button_clicked(self):
         try:
-            self.load_map()
+            self._load_map()
         except ConfigFileError as e:
             print(e)
             QMessageBox.warning(self, "Error", str(e))
 
-    def load_map(self):
+    def _load_map(self):
         path, _ = QFileDialog.getOpenFileName(
             parent=self,
             caption="Load a map",
-            directory="maps",
+            directory="maps/easy",
             filter="Txt (*.txt)"
         )
 
