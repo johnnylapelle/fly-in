@@ -10,6 +10,7 @@ from ..pathfinding.pathfinding import Pathfinding
 from ..simulation.simulator import Simulator
 from .graph_scene import GraphScene
 from .graph_view import GraphView
+from ..simulation.simulation_state import SimulationState
 
 
 class MainWindow(QMainWindow):
@@ -59,19 +60,19 @@ class MainWindow(QMainWindow):
     def _setup_shortcut(self) -> None:
         shortcut_right = QShortcut(QKeySequence("Right"), self)
         shortcut_right.activated.connect(
-            lambda: self._simulator._increase_decrease_turn(1))
+            lambda: self._simulator.increase_decrease_turn(1))
 
         shortcut_left = QShortcut(QKeySequence("Left"), self)
         shortcut_left.activated.connect(
-            lambda: self._simulator._increase_decrease_turn(-1))
+            lambda: self._simulator.increase_decrease_turn(-1))
 
         shortcut_space = QShortcut(QKeySequence("Space"), self)
         shortcut_space.activated.connect(
-            lambda: self._simulator._simulate())
+            lambda: self._simulator.toggle())
 
         shortcut_r = QShortcut(QKeySequence("R"), self)
         shortcut_r.activated.connect(
-            lambda: self._simulator._reset_simulation())
+            lambda: self._simulator.reset_simulation())
 
         shortcut_escape = QShortcut(QKeySequence("Escape"), self)
         shortcut_escape.activated.connect(
@@ -95,22 +96,22 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.btn_show_hide_desc)
 
         self.btn_simulate = QPushButton("Simulate")
-        self.btn_simulate.clicked.connect(lambda: self._simulator._simulate())
+        self.btn_simulate.clicked.connect(lambda: self._simulator.toggle())
         layout.addWidget(self.btn_simulate)
 
         self.btn_next = QPushButton("Next")
         self.btn_next.clicked.connect(
-            lambda: self._simulator._increase_decrease_turn(1))
+            lambda: self._simulator.increase_decrease_turn(1))
         layout.addWidget(self.btn_next)
 
         self.btn_prev = QPushButton("Prev")
         self.btn_prev.clicked.connect(
-            lambda: self._simulator._increase_decrease_turn(-1))
+            lambda: self._simulator.increase_decrease_turn(-1))
         layout.addWidget(self.btn_prev)
 
         self.btn_reset = QPushButton("Reset")
         self.btn_reset.clicked.connect(
-            lambda: self._simulator._reset_simulation())
+            lambda: self._simulator.reset_simulation())
         layout.addWidget(self.btn_reset)
 
         layout.addStretch()
@@ -141,8 +142,9 @@ class MainWindow(QMainWindow):
             return
 
         if event.key() == Qt.Key.Key_Left:
-            self._simulator._increase_decrease_turn(-1)
+            self._simulator.increase_decrease_turn(-1)
         if event.key() == Qt.Key.Key_Right:
-            self._simulator._increase_decrease_turn(1)
+            self._simulator.increase_decrease_turn(1)
 
         super().keyPressEvent(event)
+

@@ -10,6 +10,7 @@ from ..core.graph import Graph
 from ..core.zone import Zone
 from ..gui.drone_item import DroneItem
 from ..gui.utils import SCALE
+from .simulation_state import SimulationState
 
 StateKey = Union[Zone, Connection]
 
@@ -23,24 +24,51 @@ class Simulator():
         self._drones_items = drones_items
         self._res_table = res_table
 
+        self.state = SimulationState.IDLE
+
         self._turn: int = 0
         self._max_turn: int = 0
 
         self.animations: list[QAbstractAnimation] = []
 
-        self.is_playing = False
         self._pending_moves = 0
         self._current_logs: list[str] = []
 
         self._get_max_turn()
 
-    def _simulate(self) -> None:
-        self.is_playing = True
-        self._reset_simulation()
+    def toggle(self) -> None:
+        if self.state == SimulationState.IDLE:
+            self._start()
+        elif self.state == SimulationState.RUNNING:
+            self._pause()
+        elif self.state == SimulationState.PAUSED:
+            self._resume()
+        elif self.state == SimulationState.FINISHED:
+            self.reset_simulation()
+
+    def _start(self) -> None:
+        self.state = SimulationState.RUNNING
+
         self._play_next_turn()
 
-    def _increase_decrease_turn(self, n: int) -> None:
-        self.is_playing = False
+    def _pause(self) -> None:
+        for anim in self.animations:
+            if anim.state() == QAbstractAnimation.State.Running:
+                anim.pause()
+
+        self.state = SimulationState.PAUSED
+
+    def _resume(self) -> None:
+        for anim in self.animations:
+            if anim.state() == QAbstractAnimation.State.Paused:
+                anim.resume()
+
+        self.state = SimulationState.RUNNING
+
+    def _finish(self) -> None:
+        self.state = SimulationState.FINISHED
+
+    def increase_decrease_turn(self, n: int) -> None:
 
         if n == -1 and self._turn <= 0:
             return
@@ -53,6 +81,7 @@ class Simulator():
 
     def _play_next_turn(self) -> None:
         if self._turn >= self._max_turn:
+            self._finish()
             return
 
         moves = self._get_moves(self._turn, self._turn + 1)
@@ -130,17 +159,20 @@ class Simulator():
         self._pending_moves -= 1
 
         if self._pending_moves == 0:
+            print("la")
             print(" ".join(self._current_logs))
 
             # occupency = self._res_table.get_node_occupency(self._turn)
             # print("\n".join(occupency))
 
-            if self.is_playing:
+            print(self.state)
+            if self.state == SimulationState.RUNNING:
+                print("la")
                 self._play_next_turn()
 
-    def _reset_simulation(self) -> None:
+    def reset_simulation(self) -> None:
         print()
-
+        self.state = SimulationState.IDLE
         for anim in self.animations:
             anim.stop()
 
