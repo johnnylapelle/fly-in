@@ -129,10 +129,6 @@ class Simulator():
                 lambda i=i, node=end_node: self._on_move_finished(i, node)
             )
 
-            pause = QPauseAnimation()
-            pause.setDuration(300)
-            anim.addAnimation(pause)
-
             anim.start()
             self.animations.append(anim)
 
@@ -169,7 +165,10 @@ class Simulator():
             # print("\n".join(occupency))
 
             if self.state == SimulationState.RUNNING:
-                self._play_next_turn()
+                pause = QPauseAnimation(200)
+                pause.finished.connect(self._play_next_turn)
+                pause.start()
+                self.animations.append(pause)
 
     def reset_simulation(self) -> None:
         print()

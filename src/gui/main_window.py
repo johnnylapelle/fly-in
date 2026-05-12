@@ -82,8 +82,12 @@ class MainWindow(QMainWindow):
         return self._view
 
     def _create_panel(self) -> QWidget:
-        panel = QWidget()
-        layout = QVBoxLayout()
+        panel = QWidget(self._view)
+        panel.setAttribute(
+            Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        # panel.setStyleSheet("background: transparent;")
+
+        layout = QVBoxLayout(panel)
 
         self.btn_load_map = QPushButton("Load a map")
         self.btn_load_map.clicked.connect(self._load_map_button_clicked)
