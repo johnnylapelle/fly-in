@@ -1,7 +1,8 @@
 from typing import Union
 
 from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve,
-                          QPointF, QPropertyAnimation, QPauseAnimation)
+                          QPointF, QPropertyAnimation, QPauseAnimation,
+                          pyqtSignal, QObject)
 
 from ..pathfinding.reservation_table import ReservationTable
 from ..core.connection import Connection
@@ -15,10 +16,15 @@ from .simulation_state import SimulationState
 StateKey = Union[Zone, Connection]
 
 
-class Simulator():
+class Simulator(QObject):
+    turn_changed = pyqtSignal(int)
+
     def __init__(self, graph: Graph, drones: list[Drone],
                  drones_items: list[DroneItem],
                  res_table: ReservationTable) -> None:
+
+        super().__init__()
+
         self._drones: list[Drone] = drones
         self._graph: Graph = graph
         self._drones_items = drones_items
@@ -26,7 +32,7 @@ class Simulator():
 
         self.state = SimulationState.IDLE
 
-        self._turn: int = 0
+        self.turn: int = 0
         self._max_turn: int = 0
 
         self.animations: list[QAbstractAnimation] = []
@@ -70,22 +76,24 @@ class Simulator():
 
     def increase_decrease_turn(self, n: int) -> None:
 
-        if n == -1 and self._turn <= 0:
+        if n == -1 and self.turn <= 0:
             return
-        elif n == 1 and self._turn >= self._max_turn:
+        elif n == 1 and self.turn >= self._max_turn:
             return
 
-        moves = self._get_moves(self._turn, self._turn + n)
-        self._turn += n
+        moves = self._get_moves(self.turn, self.turn + n)
+        self.turn += n
+        self.turn_changed.emit(self.turn)
         self._animate_step(moves)
 
     def _play_next_turn(self) -> None:
-        if self._turn >= self._max_turn:
+        if self.turn >= self._max_turn:
             self._finish()
             return
 
-        moves = self._get_moves(self._turn, self._turn + 1)
-        self._turn += 1
+        moves = self._get_moves(self.turn, self.turn + 1)
+        self.turn += 1
+        self.turn_changed.emit(self.turn)
         self._animate_step(moves)
 
     def _get_moves(
@@ -178,7 +186,7 @@ class Simulator():
 
         self.animations.clear()
 
-        self._turn = 0
+        self.turn = 0
         self._pending_moves = 0
         self._current_logs.clear()
 
