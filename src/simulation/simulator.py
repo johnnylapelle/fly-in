@@ -1,130 +1,197 @@
-from PyQt6.QtCore import (QEasingCurve, QPointF, QPropertyAnimation,
-                          QSequentialAnimationGroup, QPauseAnimation)
+from typing import Union
 
-from ..core.drone import Drone
+from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve,
+                          QPointF, QPropertyAnimation, QPauseAnimation,
+                          pyqtSignal, QObject)
+
+from ..pathfinding.reservation_table import ReservationTable
 from ..core.connection import Connection
-from ..core.zone import Zone
+from ..core.drone import Drone
 from ..core.graph import Graph
+from ..core.zone import Zone
 from ..gui.drone_item import DroneItem
 from ..gui.utils import SCALE
+from .simulation_state import SimulationState
+
+StateKey = Union[Zone, Connection]
 
 
-class Simulator():
+class Simulator(QObject):
+    turn_changed = pyqtSignal(int)
+
     def __init__(self, graph: Graph, drones: list[Drone],
-                 drones_items: list[DroneItem]) -> None:
+                 drones_items: list[DroneItem],
+                 res_table: ReservationTable) -> None:
+
+        super().__init__()
+
         self._drones: list[Drone] = drones
         self._graph: Graph = graph
         self._drones_items = drones_items
-        self._logs: str = ""
-        self._turn: int = 0
+        self._res_table = res_table
+
+        self.state = SimulationState.IDLE
+
+        self.turn: int = 0
         self._max_turn: int = 0
-        self.get_max_turn()
-        self.animations: list[QSequentialAnimationGroup] = []
 
-    def simulate(self) -> None:
-        # loop until all drones's finished and simulate everything
-        self.reset_simulation()
+        self.animations: list[QAbstractAnimation] = []
 
+        self._pending_moves = 0
+        self._current_logs: list[str] = []
+
+        self._get_max_turn()
+
+    def toggle(self) -> None:
+        if self.state == SimulationState.IDLE:
+            self._start()
+        elif self.state == SimulationState.RUNNING:
+            self._pause()
+        elif self.state == SimulationState.PAUSED:
+            self._resume()
+        elif self.state == SimulationState.FINISHED:
+            self.reset_simulation()
+
+    def _start(self) -> None:
+        self.state = SimulationState.RUNNING
+
+        self._play_next_turn()
+
+    def _pause(self) -> None:
         for anim in self.animations:
-            anim.stop()
-        self.animations.clear()
+            if anim.state() == QAbstractAnimation.State.Running:
+                anim.pause()
 
-        for drone_item, drone, in zip(self._drones_items, self._drones):
-            self.animate(drone_item, drone.path)
+        self.state = SimulationState.PAUSED
 
-    def _execute_turn(self) -> None:
-        for drone in self._drones:
+    def _resume(self) -> None:
+        for anim in self.animations:
+            if anim.state() == QAbstractAnimation.State.Paused:
+                anim.resume()
+
+        self.state = SimulationState.RUNNING
+
+    def _finish(self) -> None:
+        self.state = SimulationState.FINISHED
+
+    def increase_decrease_turn(self, n: int) -> None:
+
+        if n == -1 and self.turn <= 0:
+            return
+        elif n == 1 and self.turn >= self._max_turn:
+            return
+
+        moves = self._get_moves(self.turn, self.turn + n)
+        self.turn += n
+        self.turn_changed.emit(self.turn)
+        self._animate_step(moves)
+
+    def _play_next_turn(self) -> None:
+        if self.turn >= self._max_turn:
+            self._finish()
+            return
+
+        moves = self._get_moves(self.turn, self.turn + 1)
+        self.turn += 1
+        self.turn_changed.emit(self.turn)
+        self._animate_step(moves)
+
+    def _get_moves(
+            self,
+            from_turn: int,
+            to_turn: int) -> list[tuple[int, StateKey, StateKey]]:
+
+        moves = []
+
+        for i, drone in enumerate(self._drones):
             try:
-                zone, turn = drone.path[self._turn]
-
-                if drone.position != zone:
-                    self._logs += f"D{drone.id}-{zone} "
-
-                drone.position = zone
+                start_node, _ = drone.path[from_turn]
+                end_node, _ = drone.path[to_turn]
+                moves.append((i, start_node, end_node))
             except IndexError:
                 continue
 
-    def _is_everyone_done(self) -> bool:
-        # check if every drone is on the end zone
-        for drone in self._drones:
-            if drone.position != self._graph.end:
-                return False
-        return True
+        return moves
 
-    def _print_logs(self) -> None:
-        # print and reset logs from self._logs
-        print(self._logs)
-        self._logs = ""
+    def _animate_step(
+            self,
+            moves: list[tuple[int, StateKey, StateKey]]) -> None:
 
-    def reset_simulation(self) -> None:
-        self._logs = "\n"
+        if not moves:
+            return
 
-        for anim in self.animations:
-            anim.stop()
-        self.animations.clear()
+        self._pending_moves = len(moves)
+        self._current_logs.clear()
 
-        for drone in self._drones:
-            drone.position = self._graph.start
+        for i, start_node, end_node in moves:
+            drone_item = self._drones_items[i]
 
-        self._turn = 0
-        self._move_all_drone()
+            anim = QPropertyAnimation(drone_item, b"pos")
+            anim.setDuration(300)
 
-    def increase_turn(self) -> None:
-        if self._turn < self._max_turn:
-            self._turn += 1
-        self._execute_turn_and_move()
+            anim.setStartValue(self._get_pose(start_node))
+            anim.setEndValue(self._get_pose(end_node))
 
-    def decrease_turn(self) -> None:
-        if self._turn > 0:
-            self._turn -= 1
-        self._execute_turn_and_move()
+            anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+            anim.finished.connect(
+                lambda i=i, node=end_node: self._on_move_finished(i, node)
+            )
 
-    def _execute_turn_and_move(self):
-        self._execute_turn()
-        self._move_all_drone()
+            anim.start()
+            self.animations.append(anim)
 
-    def _move_all_drone(self) -> None:
-        for drone in self._drones_items:
-            drone.move()
-
-    def get_max_turn(self) -> None:
+    def _get_max_turn(self) -> None:
         for drone in self._drones:
             for item, turn in drone.path:
                 if turn > self._max_turn:
                     self._max_turn = turn
 
-    def animate(self, drone_item, path) -> None:
-        if len(path) < 2:
-            return
-
-        group = QSequentialAnimationGroup()
-
-        for i in range(len(path) - 1):
-            (start_node, _), (end_node, _) = path[i], path[i + 1]
-
-            anim = QPropertyAnimation(drone_item, b"pos")
-            anim.setDuration(300)
-
-            anim.setStartValue(self.get_pose(start_node))
-
-            anim.setEndValue(self.get_pose(end_node))
-
-            anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-            group.addAnimation(anim)
-
-            pause = QPauseAnimation()
-            pause.setDuration(300)
-            group.addAnimation(pause)
-
-        self.animations.append(group)
-        group.start()
-
-    def get_pose(self, node: Zone | Connection) -> QPointF:
+    def _get_pose(self, node: Zone | Connection) -> QPointF:
         if isinstance(node, Zone):
             return QPointF(node.x * SCALE, node.y * SCALE)
 
         elif isinstance(node, Connection):
-            x = (node.zone_a.x + node.zone_b.x / 2)
-            y = (node.zone_a.y + node.zone_b.y / 2)
+            x = (node.zone_a.x + node.zone_b.x) / 2
+            y = (node.zone_a.y + node.zone_b.y) / 2
             return QPointF(x * SCALE, y * SCALE)
+
+    def _on_move_finished(self, idx: int, node: StateKey) -> None:
+        drone = self._drones[idx]
+
+        prev_position = drone.position
+        drone.position = node
+
+        if prev_position != node:
+            self._current_logs.append(f"D{drone.id}-{node}")
+
+        self._pending_moves -= 1
+
+        if self._pending_moves == 0:
+            print(" ".join(self._current_logs))
+
+            # occupency = self._res_table.get_node_occupency(self._turn)
+            # print("\n".join(occupency))
+
+            if self.state == SimulationState.RUNNING:
+                pause = QPauseAnimation(200)
+                pause.finished.connect(self._play_next_turn)
+                pause.start()
+                self.animations.append(pause)
+
+    def reset_simulation(self) -> None:
+        print()
+        self.state = SimulationState.IDLE
+        for anim in self.animations:
+            anim.stop()
+
+        self.animations.clear()
+
+        self.turn = 0
+        self._pending_moves = 0
+        self._current_logs.clear()
+
+        for drone in self._drones:
+            drone.position = self._graph.start
+
+        for drone_item in self._drones_items:
+            drone_item.move()

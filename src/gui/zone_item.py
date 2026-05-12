@@ -9,7 +9,8 @@ from .utils import RADIUS, SCALE
 
 
 class ZoneItem(QGraphicsEllipseItem):
-    def __init__(self, zone: Zone, on_click: Callable) -> None:
+    def __init__(self,
+                 zone: Zone, on_click: Callable[['ZoneItem'], None]) -> None:
         QGraphicsEllipseItem.__init__(
             self, -RADIUS / 2, -RADIUS / 2, RADIUS, RADIUS)
 
@@ -20,7 +21,7 @@ class ZoneItem(QGraphicsEllipseItem):
 
         # display zone informations
         self.label = QGraphicsTextItem(self)
-        self.label.setTextWidth(100)
+        self.label.setTextWidth(200)
         self.label.setHtml(
             f"<center>{self._zone.name}<br>"
             f"{self._zone.type}<br>"

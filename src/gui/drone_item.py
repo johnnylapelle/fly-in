@@ -1,14 +1,16 @@
 # from PyQt6.QtCore import Qt
 import random
 
-from PyQt6.QtGui import QPixmap, QPainter
-from PyQt6.QtWidgets import QGraphicsObject
 from PyQt6.QtCore import QRectF
+from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtWidgets import QGraphicsObject
 
 from ..core.connection import Connection
 from ..core.drone import Drone
 from ..core.zone import Zone
 from .utils import SCALE
+
+from typing import Any
 
 
 class DroneItem(QGraphicsObject):
@@ -27,7 +29,7 @@ class DroneItem(QGraphicsObject):
 
         self.setRotation(random.randint(0, 360))
 
-    def boundingRect(self):
+    def boundingRect(self) -> QRectF:
         return QRectF(
             -self.rect.width() / 2,
             -self.rect.height() / 2,
@@ -35,7 +37,10 @@ class DroneItem(QGraphicsObject):
             self.rect.height()
         )
 
-    def paint(self, painter: QPainter | None, option, widget=None):
+    def paint(self,
+              painter: QPainter | None,
+              option: Any, widget: Any = None) -> None:
+
         if isinstance(painter, QPainter):
             painter.drawPixmap(
                 int(-self.rect.width() / 2),

@@ -5,9 +5,8 @@ from ..core.zone import Zone
 
 
 class MapLoader():
-    def __init__(self, file: str):
-        self._file = file
-        self._nb_drones: int = 0
+    def __init__(self) -> None:
+        self._nb_drones = 0
         self._is_start_hub = False
         self._is_end_hub = False
         self._is_hub = False
@@ -39,13 +38,15 @@ class MapLoader():
     def nb_drones(self) -> int:
         return self._nb_drones
 
-    def parse(self) -> None:
-        self._parse_map()
+    def parse(self, file: str) -> None:
+        self._reset()
+
+        self._parse_map(file)
         self._validate()
         self._lineno = 0
 
-    def _parse_map(self):
-        with open(self._file, 'r') as f:
+    def _parse_map(self, file: str) -> None:
+        with open(file, 'r') as f:
             for line in f:
                 self._lineno += 1
 
@@ -68,7 +69,7 @@ class MapLoader():
                 elif line.startswith('start_hub:'):
                     if self._is_start_hub is True:
                         raise ConfigFileError(
-                            f"line {self._lineno} - "
+                            f"Line {self._lineno} - "
                             "start_hub found multiple times.")
                     self._is_start_hub = True
                     self._parse_hub(line, 'start_hub')
@@ -82,7 +83,7 @@ class MapLoader():
                 elif line.startswith('end_hub'):
                     if self._is_end_hub is True:
                         raise ConfigFileError(
-                            f"line {self._lineno} - "
+                            f"Line {self._lineno} - "
                             "end_hub found multiple times.")
                     self._is_end_hub = True
                     self._parse_hub(line, 'end_hub')
@@ -95,22 +96,22 @@ class MapLoader():
                 # raise error if any other line
                 else:
                     raise ConfigFileError(
-                        f"line {self._lineno} -"
-                        f" Line - '{line}' not valid.")
+                        f"Line {self._lineno} -"
+                        f" line - '{line}' not valid.")
 
     def _parse_nb_drones(self, line: str) -> None:
         # check if the nb_drones is the very first line
         if (self._is_start_hub or self._is_end_hub
            or self._is_hub or self._is_connection):
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 "The first line must define the number "
                 "of drones using:\n"
                 "   nb_drones: <number>")
 
         if self.nb_drones != 0:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 "nb_drones found multiple times."
             )
 
@@ -121,11 +122,11 @@ class MapLoader():
             self._nb_drones = int(nb_drones)
         except Exception:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"(nb_drones) '{nb_drones}' is not a valid int.")
         if self._nb_drones <= 0:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 "(nb_drones) must be a valid positive int.")
 
         # instantiate the drones
@@ -140,7 +141,7 @@ class MapLoader():
            (len(hub_data) >= 5
            and not hub_data[4].startswith('['))):
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 "Zone definition must be:\n"
                 "   hub: <name> <x> <y> [metadata]")
 
@@ -148,7 +149,7 @@ class MapLoader():
         hub_name = hub_data[1]
         if '-' in hub_name:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Invalid name '{hub_name}'.\n"
                 "The connection syntax forbids dashes in zone names.")
 
@@ -160,7 +161,7 @@ class MapLoader():
             #     raise ValueError
         except ValueError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"({hub_type} 'x' value) '{hub_x}' is not a valid int.")
 
         # get the y
@@ -171,7 +172,7 @@ class MapLoader():
             #     raise ValueError
         except ValueError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"({hub_type} 'y' value) '{hub_y}' is not a valid int.")
 
         # get the metadatas
@@ -186,18 +187,18 @@ class MapLoader():
             max_drones_int = int(max_drones_str)
         except ValueError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"(max_drones) '{max_drones_str}' is not a valid int.")
 
         # validate the zone_type
         if zone_type not in self._valid_zone_type:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Zone type '{zone_type}' invalid.")
 
         if max_drones_int <= 0:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"(max_drones) is not a valid positive int.")
 
         # get the type
@@ -219,29 +220,29 @@ class MapLoader():
         # add to the dict
         if zone.name in self._zones:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Zone '{zone.name}' already exists.")
         else:
             self._zones[zone.name] = zone
 
-    def _parse_connection(self, line: str):
+    def _parse_connection(self, line: str) -> None:
         # get the datas and check the format
         if not self._is_start_hub or not self._is_end_hub:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 "All hubs must be defined before connections.")
 
         connection_datas = line.split()
         if len(connection_datas) < 2 or len(connection_datas) > 3:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Connections must follow the format:\n"
                 "   connection: <zone1>-<zone2>")
 
         if (len(connection_datas) == 3
            and not connection_datas[2].startswith('[')):
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Connections must follow the format:\n"
                 "   connection: <zone1>-<zone2>")
 
@@ -249,7 +250,7 @@ class MapLoader():
         connection_zones = connection_datas[1].split('-')
         if len(connection_zones) != 2:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Connections must follow the format:\n"
                 "   connection: <zone1>-<zone2>")
 
@@ -258,19 +259,19 @@ class MapLoader():
             zone_a = self._zones[connection_zones[0]]
         except KeyError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Zone '{connection_zones[0]}' doesn't exists.")
         try:
             zone_b = self._zones[connection_zones[1]]
         except KeyError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Zone '{connection_zones[1]}' doesn't exists.")
 
         # check if no duplicate
         if zone_a == zone_b:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Zone '{zone_a.name}' and '{zone_b.name}' "
                 "must be two different zones."
             )
@@ -285,11 +286,11 @@ class MapLoader():
             max_link_cap_int = int(max_link_cap_str)
         except ValueError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"(max_drones) '{max_link_cap_str}' is not a valid int.")
         if max_link_cap_int <= 0:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"(max_link_capacity) must be a valid positive int."
             )
 
@@ -297,7 +298,7 @@ class MapLoader():
         key = '-'.join(sorted([zone_a.name, zone_b.name]))
         if key in self._connections:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Connection '{key}' appear more than once.\n"
                 "The same connection must not appear more than once "
                 "(e.g., a-b and b-a are considered duplicates).")
@@ -309,7 +310,7 @@ class MapLoader():
                 max_capacity=max_link_cap_int
             )
 
-    def _parse_metadatas(self, line,
+    def _parse_metadatas(self, line: str,
                          valid_keys: list[str]) -> dict[str, str]:
         # parse the metadatas and check if they are valid
         metadatas: dict[str, str] = {}
@@ -323,18 +324,18 @@ class MapLoader():
                     value = current_key_value[1]
                     if key not in valid_keys:
                         raise ConfigFileError(
-                            f"line {self._lineno} - "
+                            f"Line {self._lineno} - "
                             f"Invalid metadata '{key}'.")
                     metadatas[key] = value
         except IndexError:
             raise ConfigFileError(
-                f"line {self._lineno} - "
+                f"Line {self._lineno} - "
                 f"Invalid line '{line}'."
             )
 
         return metadatas
 
-    def _validate(self):
+    def _validate(self) -> None:
         # check if there is one start_hub/end_hub
         if self._is_start_hub is False:
             raise ConfigFileError(
@@ -348,3 +349,14 @@ class MapLoader():
             raise ConfigFileError(
                 "nb_drones parameter is mandatory:\n"
                 "   nb_drones: <number>")
+
+    def _reset(self) -> None:
+        self._nb_drones = 0
+        self._is_start_hub = False
+        self._is_end_hub = False
+        self._is_hub = False
+        self._is_connection = False
+        self._drones = []
+        self._zones = {}
+        self._connections = {}
+        self._lineno = 0

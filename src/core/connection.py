@@ -9,6 +9,7 @@ class Connection():
         self.zone_a = zone_a
         self.zone_b = zone_b
         self.max_capacity = max_capacity
+        self.max_drones = 1
 
     def get_other(self, zone: Zone) -> Zone:
         # get the neighbor zone connected to zone

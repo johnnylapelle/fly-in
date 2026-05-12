@@ -1,23 +1,50 @@
-from PyQt6.QtWidgets import (QHBoxLayout, QMainWindow, QPushButton,
-                             QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QFileDialog, QHBoxLayout, QMainWindow,
+                             QMessageBox, QPushButton, QVBoxLayout, QWidget,
+                             QLabel)
+from PyQt6.QtGui import QKeyEvent, QShortcut, QKeySequence, QResizeEvent
+from PyQt6.QtCore import Qt, QTimer
 
-from ..core.drone import Drone
+from ..core.exception import ConfigFileError
 from ..core.graph import Graph
+from ..io.map_loader import MapLoader
+from ..pathfinding.pathfinding import Pathfinding
 from ..simulation.simulator import Simulator
-from .drone_item import DroneItem
 from .graph_scene import GraphScene
 from .graph_view import GraphView
+from .utils import MARGIN
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, graph: Graph, drones: list[Drone]) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
-        self._scene = GraphScene(graph, drones)
-        self.drones_items: list[DroneItem] = self._scene.drones_items
-        self._simulator = Simulator(graph, drones, self.drones_items)
         self._setup_ui()
+        self.map_loader = MapLoader()
+        self.map_loader.parse("maps/easy/01_linear_path.txt")
+        self._load_state()
+
+        self._labels_visible = True
+
+    def _load_state(self) -> None:
+        self._drones = self.map_loader.drones
+        self._zones = self.map_loader.zones
+        self._connections = self.map_loader.connections
+
+        self._graph = Graph(
+            self._zones, self._connections)
+
+        self._scene = GraphScene(self._graph, self._drones)
+        self._view.setScene(self._scene)
+        self.drones_items = self._scene.drones_items
+
+        self._pathfinder = Pathfinding(self._graph, self._drones)
+        self._pathfinder.compute_path()
+        self._res_table = self._pathfinder.res_table
+
+        self._simulator = Simulator(
+            self._graph, self._drones, self.drones_items, self._res_table)
+        self._simulator.turn_changed.connect(self._update_turn_label)
 
     def _setup_ui(self) -> None:
         # central widget that contain the layout
@@ -25,41 +52,165 @@ class MainWindow(QMainWindow):
 
         # layout that contain the view and the panel
         layout = QHBoxLayout()
-        layout.addWidget(self._create_view(), stretch=5)
-        layout.addWidget(self._create_panel(), stretch=1)
+
+        self._view = self._create_view()
+        layout.addWidget(self._view)
 
         central.setLayout(layout)
         self.setCentralWidget(central)
 
+        self._setup_turn_label()
+        self._create_overlay_panel()
+        self._setup_sim_panel()
+
+        self._setup_shortcut()
+
+        QTimer.singleShot(0, self._update_sim_panel)
+
     def _create_view(self) -> GraphView:
-        view = GraphView()
-        view.setScene(self._scene)
-        return view
+        self._view = GraphView()
+        return self._view
 
-    def _create_panel(self) -> QWidget:
-        panel = QWidget()
-        layout = QVBoxLayout()
+    def _setup_turn_label(self) -> None:
+        self._turn_label = QLabel(self)
 
-        button_show_hide_desc = QPushButton("Show/Hide description")
-        button_show_hide_desc.clicked.connect(self._scene.toggle_labels)
-        layout.addWidget(button_show_hide_desc)
+        self._turn_label.setText("Turn 0")
+        self._turn_label.setStyleSheet("""
+                font-size: 25px;""")
+        self._turn_label.adjustSize()
 
-        button_simulate = QPushButton("Simulate")
-        button_simulate.clicked.connect(self._simulator.simulate)
-        layout.addWidget(button_simulate)
+    def _create_overlay_panel(self) -> None:
+        panel = QWidget(self._view)
+        panel.setGeometry(10, 10, 180, 300)
 
-        button_next = QPushButton("Next")
-        button_next.clicked.connect(self._simulator.increase_turn)
-        layout.addWidget(button_next)
+        layout = QVBoxLayout(panel)
 
-        button_prev = QPushButton("Prev")
-        button_prev.clicked.connect(self._simulator.decrease_turn)
-        layout.addWidget(button_prev)
+        self.btn_load_map = QPushButton("Load a map (M)")
+        self.btn_load_map.clicked.connect(self._load_map_button_clicked)
+        layout.addWidget(self.btn_load_map)
 
-        button_reset = QPushButton("Reset")
-        button_reset.clicked.connect(self._simulator.reset_simulation)
-        layout.addWidget(button_reset)
+        self.btn_desc = QPushButton("Hide description")
+        self.btn_desc.clicked.connect(self.toggle_labels)
+        layout.addWidget(self.btn_desc)
+
+        self.btn_reset = QPushButton("Reset (R)")
+        self.btn_reset.clicked.connect(
+            lambda: self._simulator.reset_simulation())
+        layout.addWidget(self.btn_reset)
 
         layout.addStretch()
+
         panel.setLayout(layout)
-        return panel
+        panel.raise_()
+
+    def _setup_sim_panel(self) -> None:
+        self._sim_panel = QWidget(self)
+        layout = QHBoxLayout(self._sim_panel)
+
+        self.btn_prev = QPushButton("Prev (Left Arrow)")
+        self.btn_prev.clicked.connect(
+            lambda: self._simulator.increase_decrease_turn(-1))
+        layout.addWidget(self.btn_prev)
+
+        self.btn_simulate = QPushButton("Simulate (Space)")
+        self.btn_simulate.clicked.connect(lambda: self._simulator.toggle())
+        layout.addWidget(self.btn_simulate)
+
+        self.btn_next = QPushButton("Next (Right Arrow)")
+        self.btn_next.clicked.connect(
+            lambda: self._simulator.increase_decrease_turn(1))
+        layout.addWidget(self.btn_next)
+
+        self._sim_panel.setLayout(layout)
+        self._sim_panel.raise_()
+
+    def _setup_shortcut(self) -> None:
+        shortcut_right = QShortcut(QKeySequence("Right"), self)
+        shortcut_right.activated.connect(
+            lambda: self._simulator.increase_decrease_turn(1))
+
+        shortcut_left = QShortcut(QKeySequence("Left"), self)
+        shortcut_left.activated.connect(
+            lambda: self._simulator.increase_decrease_turn(-1))
+
+        shortcut_space = QShortcut(QKeySequence("Space"), self)
+        shortcut_space.activated.connect(
+            lambda: self._simulator.toggle())
+
+        shortcut_r = QShortcut(QKeySequence("R"), self)
+        shortcut_r.activated.connect(
+            lambda: self._simulator.reset_simulation())
+
+        shortcut_escape = QShortcut(QKeySequence("Escape"), self)
+        shortcut_escape.activated.connect(
+            lambda: self.close())
+
+        shortcut_m = QShortcut(QKeySequence("M"), self)
+        shortcut_m.activated.connect(
+            self._load_map_button_clicked)
+
+    def _load_map_button_clicked(self) -> None:
+        try:
+            self._load_map()
+        except ConfigFileError as e:
+            print(e)
+            QMessageBox.warning(self, "ConfigFileError", str(e))
+
+    def _load_map(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Load a map",
+            directory="maps/easy",
+            filter="Txt (*.txt)"
+        )
+
+        if path:
+            self.map_loader.parse(path)
+            self._load_state()
+
+    def toggle_labels(self) -> None:
+        self._scene.toggle_labels()
+        self._labels_visible = not self._labels_visible
+
+        if self._labels_visible:
+            self.btn_desc.setText("Hide description")
+        else:
+            self.btn_desc.setText("Show description")
+
+    def _update_turn_label(self, turn: int) -> None:
+        self._turn_label.setText(f"Turn {turn}")
+
+        self._turn_label.adjustSize()
+
+        self._turn_label.move(
+            self.width() - self._turn_label.width() - MARGIN,
+            MARGIN)
+
+    def _update_sim_panel(self) -> None:
+        self._sim_panel.adjustSize()
+
+        w = self._sim_panel.width()
+        h = self._sim_panel.height()
+
+        vw = self._view.width()
+        vh = self._view.height()
+
+        self._sim_panel.move(
+            (vw - w) // 2, vh - h - MARGIN)
+
+    def keyPressEvent(self, event: QKeyEvent | None):
+        if event is None:
+            return
+
+        if event.key() == Qt.Key.Key_Left:
+            self._simulator.increase_decrease_turn(-1)
+        if event.key() == Qt.Key.Key_Right:
+            self._simulator.increase_decrease_turn(1)
+
+        super().keyPressEvent(event)
+
+    def resizeEvent(self, a0: QResizeEvent | None):
+        self._update_turn_label(self._simulator.turn)
+        self._update_sim_panel()
+
+        return super().resizeEvent(a0)

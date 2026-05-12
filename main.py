@@ -1,41 +1,28 @@
-import argparse
+# import argparse
 import sys
 import traceback
 
 from PyQt6.QtWidgets import QApplication
 
 from src.core.exception import ConfigFileError, GraphError, PathfindingError
-from src.core.graph import Graph
+# from src.core.graph import Graph
 from src.gui.main_window import MainWindow
-from src.io.map_loader import MapLoader
-from src.pathfinding.pathfinding import Pathfinding
+
+# from src.io.map_loader import MapLoader
+# from src.pathfinding.pathfinding import Pathfinding
 
 
-def main():
+def main() -> None:
     try:
-        parser = argparse.ArgumentParser(description="Fly-in")
-        parser.add_argument('--map', type=str,
-                            default='maps/medium/03_priority_puzzle.txt')
-        # parser.add_argument('--map', type=str,
-        #                     default='maps/medium/02_circular_loop.txt')
-        # parser.add_argument('--map', type=str,
-        #                     default='maps/hard/01_maze_nightmare.txt')
-        args = parser.parse_args()
-
-        map_loader = MapLoader(args.map)
-        map_loader.parse()
-        zones = map_loader.zones
-        connections = map_loader.connections
-        drones = map_loader.drones
-
-        graph = Graph(zones, connections)
-        pathfinding = Pathfinding(graph, drones)
-        pathfinding.compute_path()
-
         app = QApplication([])
-        window = MainWindow(graph, drones)
+        window = MainWindow()
         window.show()
         app.exec()
+
+        # parser = argparse.ArgumentParser(description="Fly-in")
+        # parser.add_argument('--map', type=str,
+        #                     default='maps/medium/03_priority_puzzle.txt')
+        # args = parser.parse_args()
 
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)
@@ -46,12 +33,11 @@ def main():
     except PathfindingError as e:
         print(f"PathfindingError: {e}", file=sys.stderr)
         sys.exit(1)
-    except FileNotFoundError:
-        print("FileNotFoundError: "
-              f"no such file or directory '{args.map}'", file=sys.stderr)
+    except FileNotFoundError as e:
+        print(f"{e}", file=sys.stderr)
         sys.exit(1)
-    except PermissionError:
-        print(f"PermissionError: '{args.map}'", file=sys.stderr)
+    except PermissionError as e:
+        print(f"{e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         tb = traceback.extract_tb(e.__traceback__)[-1]

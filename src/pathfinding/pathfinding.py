@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Any
 
 from ..core.connection import Connection
 from ..core.drone import Drone
@@ -12,7 +12,6 @@ StateKey = Union[Zone | Connection]
 
 
 class Pathfinding:
-
     def __init__(self, graph: Graph, drones: list[Drone]) -> None:
         self._graph = graph
         self._drones = drones
@@ -20,7 +19,11 @@ class Pathfinding:
         self._reverse_dijkstra()
         self._res_table = ReservationTable(self._graph)
 
-    def compute_path(self):
+    @property
+    def res_table(self) -> ReservationTable:
+        return self._res_table
+
+    def compute_path(self) -> None:
         start = self._graph.start
 
         for drone in self._drones:
@@ -30,7 +33,7 @@ class Pathfinding:
     def _reverse_dijkstra(self) -> None:
         start = self._graph.end
         goal = self._graph.start
-        frontier: PriorityQueue = PriorityQueue()
+        frontier: PriorityQueue[Any] = PriorityQueue()
         frontier.put(start, 0)
         self._heuristic[start] = 0
 
@@ -59,7 +62,7 @@ class Pathfinding:
 
         path: dict[tuple[StateKey, int], tuple[StateKey, int] | None] = {}
         cost_so_far: dict[tuple[StateKey, int], int] = {}
-        open_list: PriorityQueue = PriorityQueue()
+        open_list: PriorityQueue[Any] = PriorityQueue()
         closed_set: set[tuple[StateKey, int]] = set()
 
         start = self._graph.start
