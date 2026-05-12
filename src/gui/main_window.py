@@ -21,7 +21,8 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1280, 720)
         self._setup_ui()
         self.map_loader = MapLoader()
-        self.map_loader.parse("maps/easy/01_linear_path.txt")
+        # self.map_loader.parse("maps/easy/01_linear_path.txt")
+        self.map_loader.parse("maps/challenger/01_the_impossible_dream.txt")
         self._load_state()
 
         self._labels_visible = True
@@ -74,9 +75,9 @@ class MainWindow(QMainWindow):
     def _setup_turn_label(self) -> None:
         self._turn_label = QLabel(self)
 
-        self._turn_label.setText("Turn 0")
+        self._turn_label.setText("Turn 0\nDrones 0")
         self._turn_label.setStyleSheet("""
-                font-size: 25px;""")
+                font-size: 25px;color: black;""")
         self._turn_label.adjustSize()
 
     def _create_overlay_panel(self) -> None:
@@ -178,12 +179,13 @@ class MainWindow(QMainWindow):
             self.btn_desc.setText("Show description")
 
     def _update_turn_label(self, turn: int) -> None:
-        self._turn_label.setText(f"Turn {turn}")
+        self._turn_label.setText(
+            f"Turn {turn}\nDrones {self.map_loader.nb_drones}")
 
         self._turn_label.adjustSize()
 
         self._turn_label.move(
-            self.width() - self._turn_label.width() - MARGIN,
+            self.width() - self._turn_label.width() - MARGIN - 30,
             MARGIN)
 
     def _update_sim_panel(self) -> None:

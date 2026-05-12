@@ -3,9 +3,10 @@ from typing import Callable
 from PyQt6.QtGui import QBrush, QColor, QPen
 from PyQt6.QtWidgets import (QGraphicsEllipseItem, QGraphicsSceneMouseEvent,
                              QGraphicsTextItem)
+from PyQt6.QtCore import QTimer
 
 from ..core.zone import Zone
-from .utils import RADIUS, SCALE
+from .utils import RADIUS, SCALE, get_color
 
 
 class ZoneItem(QGraphicsEllipseItem):
@@ -16,8 +17,15 @@ class ZoneItem(QGraphicsEllipseItem):
 
         self._zone = zone
         self.setPos(zone.x * SCALE, zone.y * SCALE)
-        self.setBrush(QBrush(QColor(zone.color)))
-        self.setPen(QPen(QColor(zone.color)))
+
+        if zone.color == "rainbow":
+            self.hue = 0
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.update_color)
+            self.timer.start(30)
+        else:
+            self.setBrush(QBrush(QColor(get_color(zone.color))))
+            self.setPen(QPen(QColor(get_color(zone.color))))
 
         # display zone informations
         self.label = QGraphicsTextItem(self)
@@ -28,6 +36,7 @@ class ZoneItem(QGraphicsEllipseItem):
             f"{self._zone.max_drones} drones</center>")
         rect = self.label.boundingRect()
         self.label.setPos(-rect.width() / 2, rect.height() / 2 + 25)
+        self.label.setDefaultTextColor(QColor("black"))
 
         self._on_click = on_click
 
@@ -40,3 +49,11 @@ class ZoneItem(QGraphicsEllipseItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
         self._on_click(self)
         return super().mousePressEvent(event)
+
+    def update_color(self) -> None:
+        color = QColor.fromHsv(self.hue, 255, 255)
+
+        self.setBrush(QBrush(color))
+        self.setPen(QPen(color))
+
+        self.hue = (self.hue + 2) % 360

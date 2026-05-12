@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QGraphicsScene
+from PyQt6.QtGui import QBrush, QColor
 
 from ..core.drone import Drone
 from ..core.graph import Graph
@@ -20,6 +21,8 @@ class GraphScene(QGraphicsScene):
         self._connections_items: list[ConnectionItem] = []
         self._drones_items: list[DroneItem] = []
         self._labels_visible: bool = True
+
+        self.setBackgroundBrush(QBrush(QColor("#cbe2fe")))
 
         for connection in self.graph.connections.values():
             co_item = ConnectionItem(connection)
