@@ -32,6 +32,7 @@ class ConnectionItem(QGraphicsLineItem):
         rect = self.label.boundingRect()
         self.label.setPos(
             mid_x - rect.width() / 2, mid_y - rect.height() / 2)
+        self.label.setDefaultTextColor(QColor("black"))
 
     def init_pen(self) -> QPen:
         pen = QPen()

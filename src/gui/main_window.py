@@ -77,7 +77,9 @@ class MainWindow(QMainWindow):
 
         self._turn_label.setText("Turn 0\nDrones 0")
         self._turn_label.setStyleSheet("""
-                font-size: 25px;color: black;""")
+                font-size: 25px;
+                color: black;
+                font-family: "Cantarell Extra Bold";""")
         self._turn_label.adjustSize()
 
     def _create_overlay_panel(self) -> None:
@@ -90,8 +92,8 @@ class MainWindow(QMainWindow):
         self.btn_load_map.clicked.connect(self._load_map_button_clicked)
         layout.addWidget(self.btn_load_map)
 
-        self.btn_desc = QPushButton("Hide description")
-        self.btn_desc.clicked.connect(self.toggle_labels)
+        self.btn_desc = QPushButton("Hide description (H)")
+        self.btn_desc.clicked.connect(self._toggle_labels)
         layout.addWidget(self.btn_desc)
 
         self.btn_reset = QPushButton("Reset (R)")
@@ -150,6 +152,10 @@ class MainWindow(QMainWindow):
         shortcut_m.activated.connect(
             self._load_map_button_clicked)
 
+        shortcut_h = QShortcut(QKeySequence("H"), self)
+        shortcut_h.activated.connect(
+            self._toggle_labels)
+
     def _load_map_button_clicked(self) -> None:
         try:
             self._load_map()
@@ -169,7 +175,7 @@ class MainWindow(QMainWindow):
             self.map_loader.parse(path)
             self._load_state()
 
-    def toggle_labels(self) -> None:
+    def _toggle_labels(self) -> None:
         self._scene.toggle_labels()
         self._labels_visible = not self._labels_visible
 
@@ -180,7 +186,7 @@ class MainWindow(QMainWindow):
 
     def _update_turn_label(self, turn: int) -> None:
         self._turn_label.setText(
-            f"Turn {turn}\nDrones {self.map_loader.nb_drones}")
+            f"     Turn: {turn}\nDrones: {self.map_loader.nb_drones}")
 
         self._turn_label.adjustSize()
 

@@ -24,8 +24,13 @@ class ZoneItem(QGraphicsEllipseItem):
             self.timer.timeout.connect(self.update_color)
             self.timer.start(30)
         else:
-            self.setBrush(QBrush(QColor(get_color(zone.color))))
-            self.setPen(QPen(QColor(get_color(zone.color))))
+            pen = QPen(QColor(get_color(zone.color)))
+            pen.setWidth(3)
+
+            brush = QBrush(QColor(get_color(zone.color)))
+
+            self.setPen(pen)
+            self.setBrush(brush)
 
         # display zone informations
         self.label = QGraphicsTextItem(self)

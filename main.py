@@ -2,7 +2,8 @@
 import sys
 import traceback
 
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QListWidget
+from PyQt6.QtGui import QFont, QFontDatabase
 
 from src.core.exception import ConfigFileError, GraphError, PathfindingError
 # from src.core.graph import Graph
@@ -15,8 +16,13 @@ from src.gui.main_window import MainWindow
 def main() -> None:
     try:
         app = QApplication([])
+
+        font = QFont("Cantarell", 10)
+        app.setFont(font)
+
         window = MainWindow()
         window.show()
+
         app.exec()
 
         # parser = argparse.ArgumentParser(description="Fly-in")

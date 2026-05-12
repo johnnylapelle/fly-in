@@ -1,20 +1,7 @@
 Todo:
-	- Simulation within indexes
-	- reflechir a comment print le nb de drones dans chaque zone
 	- mode "libre" genre bac à sable pour tester les maps soi-meme
 
-GUI:
-	- Afficher drones
-	- Panel:
-		- Show/Hide description
-		- Set de boutons timeline (play, pause, etc)
-	- Afficher le nb de tour
-	- Charger une map
-	- Afficher Graph - DONE!
-
-
 TODO GLOBALE:
-- Simulation engine
 - GUI
 - Output format
 - README
@@ -22,8 +9,4 @@ TODO GLOBALE:
 - Construire le Graph - DONE!
 - Class drone - DONE!
 - Pathfinder (algo) - DONE!
-
-
-Idées:
-	- Pouvoir charger une map depuis l'interface
-	- Que tout se passe depuis l'interface
+- Simulation engine - DONE!
