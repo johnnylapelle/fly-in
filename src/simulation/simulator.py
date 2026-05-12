@@ -1,7 +1,7 @@
 from typing import Union
 
 from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve,
-                          QPointF, QPropertyAnimation)
+                          QPointF, QPropertyAnimation, QPauseAnimation)
 
 from ..pathfinding.reservation_table import ReservationTable
 from ..core.connection import Connection
@@ -128,6 +128,10 @@ class Simulator():
             anim.finished.connect(
                 lambda i=i, node=end_node: self._on_move_finished(i, node)
             )
+
+            pause = QPauseAnimation()
+            pause.setDuration(300)
+            anim.addAnimation(pause)
 
             anim.start()
             self.animations.append(anim)
