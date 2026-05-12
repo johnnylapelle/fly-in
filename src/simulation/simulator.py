@@ -159,15 +159,12 @@ class Simulator():
         self._pending_moves -= 1
 
         if self._pending_moves == 0:
-            print("la")
             print(" ".join(self._current_logs))
 
             # occupency = self._res_table.get_node_occupency(self._turn)
             # print("\n".join(occupency))
 
-            print(self.state)
             if self.state == SimulationState.RUNNING:
-                print("la")
                 self._play_next_turn()
 
     def reset_simulation(self) -> None:

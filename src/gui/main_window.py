@@ -10,7 +10,6 @@ from ..pathfinding.pathfinding import Pathfinding
 from ..simulation.simulator import Simulator
 from .graph_scene import GraphScene
 from .graph_view import GraphView
-from ..simulation.simulation_state import SimulationState
 
 
 class MainWindow(QMainWindow):
@@ -147,4 +146,3 @@ class MainWindow(QMainWindow):
             self._simulator.increase_decrease_turn(1)
 
         super().keyPressEvent(event)
-
