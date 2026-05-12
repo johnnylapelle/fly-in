@@ -5,7 +5,8 @@
 - GUI with the visualisation of the Graph
 - Pathfinding Algorithm
 	- BFS -> Dijkstra (heuristic function for A*)
-	- A* (main algo)
+	- A* space/time
+- GUI animation and UX
 
 ## Resources
 ### Pathfinding algorithm

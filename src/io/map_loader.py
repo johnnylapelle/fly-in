@@ -18,7 +18,7 @@ class MapLoader():
             "normal", "blocked", "restricted", "priority"]
         self._valid_metadatas_co = [
             "max_link_capacity"]
-        self._valid_metadatas_hub = [
+        self._valid_metadatas_zone = [
             "color", "zone", "max_drones"]
         self._lineno = 0
 
@@ -72,12 +72,12 @@ class MapLoader():
                             f"Line {self._lineno} - "
                             "start_hub found multiple times.")
                     self._is_start_hub = True
-                    self._parse_hub(line, 'start_hub')
+                    self._parse_zone(line, 'start_hub')
 
                 # get the hub data
                 elif line.startswith('hub:'):
                     self._is_hub = True
-                    self._parse_hub(line, 'hub')
+                    self._parse_zone(line, 'hub')
 
                 # get the end_hub data
                 elif line.startswith('end_hub'):
@@ -86,7 +86,7 @@ class MapLoader():
                             f"Line {self._lineno} - "
                             "end_hub found multiple times.")
                     self._is_end_hub = True
-                    self._parse_hub(line, 'end_hub')
+                    self._parse_zone(line, 'end_hub')
 
                 # get the connections data
                 elif line.startswith("connection:"):
@@ -134,56 +134,56 @@ class MapLoader():
             drone = Drone(i + 1)
             self._drones.append(drone)
 
-    def _parse_hub(self, line: str, hub_type: str) -> None:
+    def _parse_zone(self, line: str, hub_type: str) -> None:
         # check if arg len is >= 5
-        hub_data = line.split()
-        if (len(hub_data) < 4 or
-           (len(hub_data) >= 5
-           and not hub_data[4].startswith('['))):
+        zone_data = line.split()
+        if (len(zone_data) < 4 or
+           (len(zone_data) >= 5
+           and not zone_data[4].startswith('['))):
             raise ConfigFileError(
                 f"Line {self._lineno} - "
                 "Zone definition must be:\n"
                 "   hub: <name> <x> <y> [metadata]")
 
         # get the name and validate it
-        hub_name = hub_data[1]
-        if '-' in hub_name:
+        zone_name = zone_data[1]
+        if '-' in zone_name:
             raise ConfigFileError(
                 f"Line {self._lineno} - "
-                f"Invalid name '{hub_name}'.\n"
+                f"Invalid name '{zone_name}'.\n"
                 "The connection syntax forbids dashes in zone names.")
 
         # get the x
         try:
-            hub_x = hub_data[2]
-            hub_x_int = int(hub_x)
+            zone_x = zone_data[2]
+            zone_x_int = int(zone_x)
             # if hub_x_int < 0:
             #     raise ValueError
         except ValueError:
             raise ConfigFileError(
                 f"Line {self._lineno} - "
-                f"({hub_type} 'x' value) '{hub_x}' is not a valid int.")
+                f"({hub_type} 'x' value) '{zone_x}' is not a valid int.")
 
         # get the y
         try:
-            hub_y = hub_data[3]
-            hub_y_int = int(hub_y)
+            zone_y = zone_data[3]
+            zone_y_int = int(zone_y)
             # if hub_y_int < 0:
             #     raise ValueError
         except ValueError:
             raise ConfigFileError(
                 f"Line {self._lineno} - "
-                f"({hub_type} 'y' value) '{hub_y}' is not a valid int.")
+                f"({hub_type} 'y' value) '{zone_y}' is not a valid int.")
 
         # get the metadatas
-        hub_metadatas = self._parse_metadatas(
-            line, self._valid_metadatas_hub)
+        zone_metadatas = self._parse_metadatas(
+            line, self._valid_metadatas_zone)
 
         # get the known metadata
         try:
-            zone_type = hub_metadatas.get('zone', 'normal')
-            color = hub_metadatas.get('color', None)
-            max_drones_str = hub_metadatas.get('max_drones', 1)
+            zone_type = zone_metadatas.get('zone', 'normal')
+            color = zone_metadatas.get('color', None)
+            max_drones_str = zone_metadatas.get('max_drones', 1)
             max_drones_int = int(max_drones_str)
         except ValueError:
             raise ConfigFileError(
@@ -205,11 +205,18 @@ class MapLoader():
         is_start = hub_type == 'start_hub'
         is_end = hub_type == 'end_hub'
 
+        for zone in self._zones.values():
+            if zone.x == zone_x_int and zone.y == zone_y_int:
+                raise ConfigFileError(
+                    f"Line {self._lineno} - "
+                    f"Zone '{zone.name} and {zone_name}' "
+                    "cannot be at the same position.")
+
         # instantiate the zone
         zone = Zone(
-            name=hub_name,
-            x=hub_x_int,
-            y=hub_y_int,
+            name=zone_name,
+            x=zone_x_int,
+            y=zone_y_int,
             is_start=is_start,
             is_end=is_end,
             color=color,
