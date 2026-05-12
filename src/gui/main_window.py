@@ -1,5 +1,7 @@
 from PyQt6.QtWidgets import (QFileDialog, QHBoxLayout, QMainWindow,
                              QMessageBox, QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtGui import QKeyEvent, QShortcut, QKeySequence
+from PyQt6.QtCore import Qt
 
 from ..core.exception import ConfigFileError
 from ..core.graph import Graph
@@ -51,6 +53,29 @@ class MainWindow(QMainWindow):
 
         central.setLayout(layout)
         self.setCentralWidget(central)
+
+        self._setup_shortcut()
+
+    def _setup_shortcut(self) -> None:
+        shortcut_right = QShortcut(QKeySequence("Right"), self)
+        shortcut_right.activated.connect(
+            lambda: self._simulator._increase_decrease_turn(1))
+
+        shortcut_left = QShortcut(QKeySequence("Left"), self)
+        shortcut_left.activated.connect(
+            lambda: self._simulator._increase_decrease_turn(-1))
+
+        shortcut_space = QShortcut(QKeySequence("Space"), self)
+        shortcut_space.activated.connect(
+            lambda: self._simulator._simulate())
+
+        shortcut_r = QShortcut(QKeySequence("R"), self)
+        shortcut_r.activated.connect(
+            lambda: self._simulator._reset_simulation())
+
+        shortcut_escape = QShortcut(QKeySequence("Escape"), self)
+        shortcut_escape.activated.connect(
+            lambda: self.close())
 
     def _create_view(self) -> GraphView:
         self._view = GraphView()
@@ -110,3 +135,14 @@ class MainWindow(QMainWindow):
         if path:
             self.map_loader.parse(path)
             self._load_state()
+
+    def keyPressEvent(self, event: QKeyEvent | None):
+        if event is None:
+            return
+
+        if event.key() == Qt.Key.Key_Left:
+            self._simulator._increase_decrease_turn(-1)
+        if event.key() == Qt.Key.Key_Right:
+            self._simulator._increase_decrease_turn(1)
+
+        super().keyPressEvent(event)
