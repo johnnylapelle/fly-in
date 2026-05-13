@@ -1,3 +1,6 @@
+import random
+
+
 SCALE = 200
 RADIUS = SCALE // 2
 MARGIN = 30
@@ -26,3 +29,13 @@ def get_color(color: str | None) -> str:
             return "#9C3819"
         case _:
             return color
+
+
+def get_fish() -> str:
+    fishes = [
+        "fish.png",
+        "fish2.png",
+        "fish3.png"
+    ]
+
+    return "src/gui/assets/" + random.choice(fishes)

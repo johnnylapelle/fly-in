@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import QGraphicsObject
 from ..core.connection import Connection
 from ..core.drone import Drone
 from ..core.zone import Zone
-from .utils import SCALE
+from .utils import SCALE, get_fish
 
 
 class DroneItem(QGraphicsObject):
@@ -17,7 +17,7 @@ class DroneItem(QGraphicsObject):
         super().__init__()
         self.drone = drone
 
-        self.pixmap = QPixmap("pngegg100.png")
+        self.pixmap = QPixmap(get_fish())
         self.rect = QRectF(self.pixmap.rect())
 
         if isinstance(self.drone.position, Zone):

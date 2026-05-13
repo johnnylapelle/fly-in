@@ -30,6 +30,9 @@ class MainWindow(QMainWindow):
         if self._map_path is not None:
             self.map_loader.parse(self._map_path)
             self._load_state()
+        else:
+            self.map_loader.parse("maps/easy/01_linear_path.txt")
+            self._load_state()
 
         self._labels_visible = True
 
