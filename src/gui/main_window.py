@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         self._turn_label.setStyleSheet("""
                 font-size: 25px;
                 color: black;
-                font-family: "Cantarell Extra Bold";""")
+                font-family: "Cantarell";""")
         self._turn_label.adjustSize()
 
     def _create_overlay_panel(self) -> None:
@@ -170,6 +170,7 @@ class MainWindow(QMainWindow):
     def _load_map_button_clicked(self) -> None:
         try:
             self._load_map()
+            self._update_turn_label(0)
         except ConfigFileError as e:
             print(e)
             QMessageBox.warning(self, "ConfigFileError", str(e))
