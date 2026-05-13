@@ -16,15 +16,19 @@ from .utils import MARGIN
 
 
 class MainWindow(QMainWindow):
-    def __init__(self) -> None:
+    def __init__(self, map_path: str | None = None) -> None:
         super().__init__()
+
+        self._map_path = map_path
+
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
         self._setup_ui()
         self.map_loader = MapLoader()
-        self.map_loader.parse("maps/easy/01_linear_path.txt")
-        # self.map_loader.parse("maps/challenger/01_the_impossible_dream.txt")
-        self._load_state()
+
+        if self._map_path is not None:
+            self.map_loader.parse(self._map_path)
+            self._load_state()
 
         self._labels_visible = True
 
@@ -48,6 +52,7 @@ class MainWindow(QMainWindow):
             self._simulator = Simulator(
                 self._graph, self._drones, self.drones_items, self._res_table)
             self._simulator.turn_changed.connect(self._update_turn_label)
+
         except Exception as e:
             print(e)
             QMessageBox.warning(
@@ -82,7 +87,7 @@ class MainWindow(QMainWindow):
     def _setup_turn_label(self) -> None:
         self._turn_label = QLabel(self)
 
-        self._turn_label.setText("Turn 0\nDrones 0")
+        self._turn_label.setText("Turn: 0     Drones: 0")
         self._turn_label.setStyleSheet("""
                 font-size: 25px;
                 color: black;
@@ -138,19 +143,23 @@ class MainWindow(QMainWindow):
         try:
             shortcut_right = QShortcut(QKeySequence("Right"), self)
             shortcut_right.activated.connect(
-                lambda: self._simulator.increase_decrease_turn(1))
+                lambda: self._simulator.increase_decrease_turn(1)
+                if hasattr(self, '_simulator') else None)
 
             shortcut_left = QShortcut(QKeySequence("Left"), self)
             shortcut_left.activated.connect(
-                lambda: self._simulator.increase_decrease_turn(-1))
+                lambda: self._simulator.increase_decrease_turn(-1)
+                if hasattr(self, '_simulator') else None)
 
             shortcut_space = QShortcut(QKeySequence("Space"), self)
             shortcut_space.activated.connect(
-                lambda: self._simulator.toggle())
+                lambda: self._simulator.toggle()
+                if hasattr(self, '_simulator') else None)
 
             shortcut_r = QShortcut(QKeySequence("R"), self)
             shortcut_r.activated.connect(
-                lambda: self._simulator.reset_simulation())
+                lambda: self._simulator.reset_simulation()
+                if hasattr(self, '_simulator') else None)
 
             shortcut_escape = QShortcut(QKeySequence("Escape"), self)
             shortcut_escape.activated.connect(
@@ -164,13 +173,13 @@ class MainWindow(QMainWindow):
             shortcut_h.activated.connect(
                 self._toggle_labels)
 
-        except Exception:
+        except AttributeError:
             print("Error")
+            pass
 
     def _load_map_button_clicked(self) -> None:
         try:
             self._load_map()
-            self._update_turn_label(0)
         except ConfigFileError as e:
             print(e)
             QMessageBox.warning(self, "ConfigFileError", str(e))
@@ -186,19 +195,23 @@ class MainWindow(QMainWindow):
         if path:
             self.map_loader.parse(path)
             self._load_state()
+            self._update_turn_label(0)
 
     def _toggle_labels(self) -> None:
-        self._scene.toggle_labels()
-        self._labels_visible = not self._labels_visible
+        try:
+            self._scene.toggle_labels()
+            self._labels_visible = not self._labels_visible
 
-        if self._labels_visible:
-            self.btn_desc.setText("Hide description (H)")
-        else:
-            self.btn_desc.setText("Show description (H)")
+            if self._labels_visible:
+                self.btn_desc.setText("Hide description (H)")
+            else:
+                self.btn_desc.setText("Show description (H)")
+        except AttributeError:
+            pass
 
     def _update_turn_label(self, turn: int) -> None:
         self._turn_label.setText(
-            f"     Turn: {turn}\nDrones: {self.map_loader.nb_drones}")
+            f"     Turn: {turn}     Drones: {self.map_loader.nb_drones}")
 
         self._turn_label.adjustSize()
 

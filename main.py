@@ -1,4 +1,4 @@
-# import argparse
+import argparse
 import sys
 import traceback
 
@@ -11,20 +11,20 @@ from src.gui.main_window import MainWindow
 
 def main() -> None:
     try:
+        parser = argparse.ArgumentParser(description="Fly-in")
+        parser.add_argument('--map', type=str,
+                            default=None)
+        args = parser.parse_args()
+
         app = QApplication([])
 
         font = QFont("Cantarell", 10)
         app.setFont(font)
 
-        window = MainWindow()
+        window = MainWindow(map_path=args.map)
         window.show()
 
         app.exec()
-
-        # parser = argparse.ArgumentParser(description="Fly-in")
-        # parser.add_argument('--map', type=str,
-        #                     default='maps/medium/03_priority_puzzle.txt')
-        # args = parser.parse_args()
 
     except ConfigFileError as e:
         print(f"ConfigFileError: {e}", file=sys.stderr)
