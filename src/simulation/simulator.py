@@ -10,10 +10,9 @@ from ..core.graph import Graph
 from ..core.zone import Zone
 from ..gui.drone_item import DroneItem
 from ..gui.utils import SCALE
-from ..pathfinding.reservation_table import ReservationTable
 from .simulation_state import SimulationState
 
-StateKey = Union[Zone, Connection]
+Node = Union[Zone, Connection]
 
 
 class Simulator(QObject):
@@ -21,14 +20,15 @@ class Simulator(QObject):
 
     def __init__(self, graph: Graph, drones: list[Drone],
                  drones_items: list[DroneItem],
-                 res_table: ReservationTable) -> None:
+                 debug: bool) -> None:
 
         super().__init__()
 
         self._drones: list[Drone] = drones
         self._graph: Graph = graph
         self._drones_items = drones_items
-        self._res_table = res_table
+
+        self._debug = debug
 
         self.state = SimulationState.IDLE
 
@@ -99,7 +99,7 @@ class Simulator(QObject):
     def _get_moves(
             self,
             from_turn: int,
-            to_turn: int) -> list[tuple[int, StateKey, StateKey]]:
+            to_turn: int) -> list[tuple[int, Node, Node]]:
 
         moves = []
 
@@ -115,7 +115,7 @@ class Simulator(QObject):
 
     def _animate_step(
             self,
-            moves: list[tuple[int, StateKey, StateKey]]) -> None:
+            moves: list[tuple[int, Node, Node]]) -> None:
 
         if not moves:
             return
@@ -155,11 +155,14 @@ class Simulator(QObject):
             y = (node.zone_a.y + node.zone_b.y) / 2
             return QPointF(x * SCALE, y * SCALE)
 
-    def _on_move_finished(self, idx: int, node: StateKey) -> None:
+    def _on_move_finished(self, idx: int, node: Node) -> None:
         drone = self._drones[idx]
 
         prev_position = drone.position
         drone.position = node
+
+        if self._debug:
+            self._track_node_stats(prev_position, node)
 
         if prev_position != node:
             self._current_logs.append(f"D{drone.id}-{node}")
@@ -169,8 +172,8 @@ class Simulator(QObject):
         if self._pending_moves == 0:
             print(" ".join(self._current_logs))
 
-            # occupency = self._res_table.get_node_occupency(self._turn)
-            # print("\n".join(occupency))
+            if self._debug:
+                self._print_node_stats()
 
             if self.state == SimulationState.RUNNING:
                 pause = QPauseAnimation(200)
@@ -195,3 +198,16 @@ class Simulator(QObject):
 
         for drone_item in self._drones_items:
             drone_item.move()
+
+    def _track_node_stats(self, leave: Node | None,
+                          enter: Node | None) -> None:
+        if leave is not None:
+            leave.current_nb_drone -= 1
+        if enter is not None:
+            enter.current_nb_drone += 1
+
+    def _print_node_stats(self) -> None:
+        for zone in self._graph.zones.values():
+            print(f"{zone.name} "
+                  f"{zone.current_nb_drone}/{zone.max_drones}")
+        print()

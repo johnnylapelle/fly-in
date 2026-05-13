@@ -16,10 +16,11 @@ from .utils import MARGIN
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, map_path: str | None = None) -> None:
+    def __init__(self, map_path: str | None, debug: bool) -> None:
         super().__init__()
 
         self._map_path = map_path
+        self._debug = debug
 
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
@@ -50,7 +51,8 @@ class MainWindow(QMainWindow):
             self._res_table = self._pathfinder.res_table
 
             self._simulator = Simulator(
-                self._graph, self._drones, self.drones_items, self._res_table)
+                self._graph, self._drones,
+                self.drones_items, self._debug)
             self._simulator.turn_changed.connect(self._update_turn_label)
 
         except Exception as e:
@@ -231,7 +233,7 @@ class MainWindow(QMainWindow):
         self._sim_panel.move(
             (vw - w) // 2, vh - h - MARGIN)
 
-    def keyPressEvent(self, event: QKeyEvent | None):
+    def keyPressEvent(self, event: QKeyEvent | None) -> None:
         if event is None:
             return
 
@@ -242,7 +244,7 @@ class MainWindow(QMainWindow):
 
         super().keyPressEvent(event)
 
-    def resizeEvent(self, a0: QResizeEvent | None):
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
         try:
             self._update_turn_label(self._simulator.turn)
         except AttributeError:

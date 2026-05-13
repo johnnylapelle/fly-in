@@ -8,7 +8,7 @@ from ..core.zone import Zone
 from .priority_queue import PriorityQueue
 from .reservation_table import ReservationTable
 
-StateKey = Union[Zone | Connection]
+Node = Union[Zone | Connection]
 
 
 class Pathfinding:
@@ -28,6 +28,7 @@ class Pathfinding:
 
         for drone in self._drones:
             drone.position = start
+            start.current_nb_drone += 1
             drone.path = self._space_time_a_star()
 
     def _reverse_dijkstra(self) -> None:
@@ -58,12 +59,12 @@ class Pathfinding:
             raise PathfindingError(
                 "(reverse_dijkstra) No solution found.")
 
-    def _space_time_a_star(self) -> list[tuple[StateKey, int]]:
+    def _space_time_a_star(self) -> list[tuple[Node, int]]:
 
-        path: dict[tuple[StateKey, int], tuple[StateKey, int] | None] = {}
-        cost_so_far: dict[tuple[StateKey, int], int] = {}
+        path: dict[tuple[Node, int], tuple[Node, int] | None] = {}
+        cost_so_far: dict[tuple[Node, int], int] = {}
         open_list: PriorityQueue[Any] = PriorityQueue()
-        closed_set: set[tuple[StateKey, int]] = set()
+        closed_set: set[tuple[Node, int]] = set()
 
         start = self._graph.start
         goal = self._graph.end
@@ -141,13 +142,13 @@ class Pathfinding:
 
     def _reconstruct_path(
             self,
-            path: dict[tuple[StateKey, int],
-                       tuple[StateKey, int] | None],
+            path: dict[tuple[Node, int],
+                       tuple[Node, int] | None],
             turn: int,
-            goal: Zone) -> list[tuple[StateKey, int]]:
+            goal: Zone) -> list[tuple[Node, int]]:
 
-        correct_path: list[tuple[StateKey, int]] = []
-        current: tuple[StateKey, int] | None = (goal, turn)
+        correct_path: list[tuple[Node, int]] = []
+        current: tuple[Node, int] | None = (goal, turn)
 
         if (goal, turn) not in path:
             raise PathfindingError("(space_time_a_star) No solution found.")
@@ -159,7 +160,7 @@ class Pathfinding:
         correct_path.reverse()
         return correct_path
 
-    def _reserve_path(self, path: list[tuple[StateKey, int]]) -> None:
+    def _reserve_path(self, path: list[tuple[Node, int]]) -> None:
         for item, turn in path:
             if isinstance(item, Zone):
                 self._res_table.reserve(item.name, turn)

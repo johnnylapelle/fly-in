@@ -14,6 +14,8 @@ def main() -> None:
         parser = argparse.ArgumentParser(description="Fly-in")
         parser.add_argument('--map', type=str,
                             default=None)
+        parser.add_argument('--debug', action="store_true",
+                            default=False)
         args = parser.parse_args()
 
         app = QApplication([])
@@ -21,7 +23,8 @@ def main() -> None:
         font = QFont("Cantarell", 10)
         app.setFont(font)
 
-        window = MainWindow(map_path=args.map)
+        window = MainWindow(map_path=args.map,
+                            debug=args.debug)
         window.show()
 
         app.exec()
