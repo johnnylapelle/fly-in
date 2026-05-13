@@ -2,15 +2,11 @@
 import sys
 import traceback
 
-from PyQt6.QtWidgets import QApplication, QListWidget
-from PyQt6.QtGui import QFont, QFontDatabase
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QApplication
 
 from src.core.exception import ConfigFileError, GraphError, PathfindingError
-# from src.core.graph import Graph
 from src.gui.main_window import MainWindow
-
-# from src.io.map_loader import MapLoader
-# from src.pathfinding.pathfinding import Pathfinding
 
 
 def main() -> None:

@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui import QBrush, QColor
+from PyQt6.QtWidgets import QGraphicsScene
 
 from ..core.drone import Drone
 from ..core.graph import Graph

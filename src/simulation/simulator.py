@@ -1,16 +1,16 @@
 from typing import Union
 
-from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve,
-                          QPointF, QPropertyAnimation, QPauseAnimation,
-                          pyqtSignal, QObject)
+from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve, QObject,
+                          QPauseAnimation, QPointF, QPropertyAnimation,
+                          pyqtSignal)
 
-from ..pathfinding.reservation_table import ReservationTable
 from ..core.connection import Connection
 from ..core.drone import Drone
 from ..core.graph import Graph
 from ..core.zone import Zone
 from ..gui.drone_item import DroneItem
 from ..gui.utils import SCALE
+from ..pathfinding.reservation_table import ReservationTable
 from .simulation_state import SimulationState
 
 StateKey = Union[Zone, Connection]

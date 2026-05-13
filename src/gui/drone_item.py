@@ -1,5 +1,6 @@
 # from PyQt6.QtCore import Qt
 import random
+from typing import Any
 
 from PyQt6.QtCore import QRectF
 from PyQt6.QtGui import QPainter, QPixmap
@@ -9,8 +10,6 @@ from ..core.connection import Connection
 from ..core.drone import Drone
 from ..core.zone import Zone
 from .utils import SCALE
-
-from typing import Any
 
 
 class DroneItem(QGraphicsObject):

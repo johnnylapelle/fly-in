@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import (QFileDialog, QHBoxLayout, QMainWindow,
-                             QMessageBox, QPushButton, QVBoxLayout, QWidget,
-                             QLabel)
-from PyQt6.QtGui import QKeyEvent, QShortcut, QKeySequence, QResizeEvent
+import sys
+
 from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QKeyEvent, QKeySequence, QResizeEvent, QShortcut
+from PyQt6.QtWidgets import (QFileDialog, QHBoxLayout, QLabel, QMainWindow,
+                             QMessageBox, QPushButton, QVBoxLayout, QWidget)
 
 from ..core.exception import ConfigFileError
 from ..core.graph import Graph
@@ -21,31 +22,37 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1280, 720)
         self._setup_ui()
         self.map_loader = MapLoader()
-        # self.map_loader.parse("maps/easy/01_linear_path.txt")
-        self.map_loader.parse("maps/challenger/01_the_impossible_dream.txt")
+        self.map_loader.parse("maps/easy/01_linear_path.txt")
+        # self.map_loader.parse("maps/challenger/01_the_impossible_dream.txt")
         self._load_state()
 
         self._labels_visible = True
 
     def _load_state(self) -> None:
-        self._drones = self.map_loader.drones
-        self._zones = self.map_loader.zones
-        self._connections = self.map_loader.connections
+        try:
+            self._drones = self.map_loader.drones
+            self._zones = self.map_loader.zones
+            self._connections = self.map_loader.connections
 
-        self._graph = Graph(
-            self._zones, self._connections)
+            self._graph = Graph(
+                self._zones, self._connections)
 
-        self._scene = GraphScene(self._graph, self._drones)
-        self._view.setScene(self._scene)
-        self.drones_items = self._scene.drones_items
+            self._scene = GraphScene(self._graph, self._drones)
+            self._view.setScene(self._scene)
+            self.drones_items = self._scene.drones_items
 
-        self._pathfinder = Pathfinding(self._graph, self._drones)
-        self._pathfinder.compute_path()
-        self._res_table = self._pathfinder.res_table
+            self._pathfinder = Pathfinding(self._graph, self._drones)
+            self._pathfinder.compute_path()
+            self._res_table = self._pathfinder.res_table
 
-        self._simulator = Simulator(
-            self._graph, self._drones, self.drones_items, self._res_table)
-        self._simulator.turn_changed.connect(self._update_turn_label)
+            self._simulator = Simulator(
+                self._graph, self._drones, self.drones_items, self._res_table)
+            self._simulator.turn_changed.connect(self._update_turn_label)
+        except Exception as e:
+            print(e)
+            QMessageBox.warning(
+                self, "Error", f"{str(e)}\nThe program will exit.")
+            sys.exit(1)
 
     def _setup_ui(self) -> None:
         # central widget that contain the layout
@@ -128,33 +135,37 @@ class MainWindow(QMainWindow):
         self._sim_panel.raise_()
 
     def _setup_shortcut(self) -> None:
-        shortcut_right = QShortcut(QKeySequence("Right"), self)
-        shortcut_right.activated.connect(
-            lambda: self._simulator.increase_decrease_turn(1))
+        try:
+            shortcut_right = QShortcut(QKeySequence("Right"), self)
+            shortcut_right.activated.connect(
+                lambda: self._simulator.increase_decrease_turn(1))
 
-        shortcut_left = QShortcut(QKeySequence("Left"), self)
-        shortcut_left.activated.connect(
-            lambda: self._simulator.increase_decrease_turn(-1))
+            shortcut_left = QShortcut(QKeySequence("Left"), self)
+            shortcut_left.activated.connect(
+                lambda: self._simulator.increase_decrease_turn(-1))
 
-        shortcut_space = QShortcut(QKeySequence("Space"), self)
-        shortcut_space.activated.connect(
-            lambda: self._simulator.toggle())
+            shortcut_space = QShortcut(QKeySequence("Space"), self)
+            shortcut_space.activated.connect(
+                lambda: self._simulator.toggle())
 
-        shortcut_r = QShortcut(QKeySequence("R"), self)
-        shortcut_r.activated.connect(
-            lambda: self._simulator.reset_simulation())
+            shortcut_r = QShortcut(QKeySequence("R"), self)
+            shortcut_r.activated.connect(
+                lambda: self._simulator.reset_simulation())
 
-        shortcut_escape = QShortcut(QKeySequence("Escape"), self)
-        shortcut_escape.activated.connect(
-            lambda: self.close())
+            shortcut_escape = QShortcut(QKeySequence("Escape"), self)
+            shortcut_escape.activated.connect(
+                lambda: self.close())
 
-        shortcut_m = QShortcut(QKeySequence("M"), self)
-        shortcut_m.activated.connect(
-            self._load_map_button_clicked)
+            shortcut_m = QShortcut(QKeySequence("M"), self)
+            shortcut_m.activated.connect(
+                self._load_map_button_clicked)
 
-        shortcut_h = QShortcut(QKeySequence("H"), self)
-        shortcut_h.activated.connect(
-            self._toggle_labels)
+            shortcut_h = QShortcut(QKeySequence("H"), self)
+            shortcut_h.activated.connect(
+                self._toggle_labels)
+
+        except Exception:
+            print("Error")
 
     def _load_map_button_clicked(self) -> None:
         try:
@@ -180,9 +191,9 @@ class MainWindow(QMainWindow):
         self._labels_visible = not self._labels_visible
 
         if self._labels_visible:
-            self.btn_desc.setText("Hide description")
+            self.btn_desc.setText("Hide description (H)")
         else:
-            self.btn_desc.setText("Show description")
+            self.btn_desc.setText("Show description (H)")
 
     def _update_turn_label(self, turn: int) -> None:
         self._turn_label.setText(
@@ -218,7 +229,11 @@ class MainWindow(QMainWindow):
         super().keyPressEvent(event)
 
     def resizeEvent(self, a0: QResizeEvent | None):
-        self._update_turn_label(self._simulator.turn)
+        try:
+            self._update_turn_label(self._simulator.turn)
+        except AttributeError:
+            self._update_turn_label(0)
+
         self._update_sim_panel()
 
         return super().resizeEvent(a0)

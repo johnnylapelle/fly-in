@@ -1,9 +1,9 @@
 from typing import Callable
 
+from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QBrush, QColor, QPen
 from PyQt6.QtWidgets import (QGraphicsEllipseItem, QGraphicsSceneMouseEvent,
                              QGraphicsTextItem)
-from PyQt6.QtCore import QTimer
 
 from ..core.zone import Zone
 from .utils import RADIUS, SCALE, get_color
