@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
                              QVBoxLayout, QWidget)
 
 from ..core.exception import ConfigFileError
+from .turn_label import TurnLabel
 from .simulation_controls import SimControls
 from .overlay_panel import OverlayPanel
 from ..core.graph import Graph
@@ -76,7 +77,7 @@ class MainWindow(QMainWindow):
         QHBoxLayout(central).addWidget(self._view)
         self.setCentralWidget(central)
 
-        self._setup_turn_label()
+        self._turn_label = TurnLabel(self)
         self._overlay = OverlayPanel(self)
         self._sim_controls = SimControls(self)
 
@@ -94,18 +95,8 @@ class MainWindow(QMainWindow):
         self._sim_controls.play_requested.connect(self._toggle_play)
 
         self._setup_shortcut()
-        # self._update_sim_panel()
         QTimer.singleShot(0, self._update_sim_controls)
-
-    def _setup_turn_label(self) -> None:
-        self._turn_label = QLabel(self)
-
-        self._turn_label.setText("Turn: 0     Drones: 0")
-        self._turn_label.setStyleSheet("""
-                font-size: 25px;
-                color: black;
-                font-family: "Cantarell";""")
-        self._turn_label.adjustSize()
+        QTimer.singleShot(0, self._update_overlay)
 
     def _setup_shortcut(self) -> None:
         try:
@@ -189,6 +180,8 @@ class MainWindow(QMainWindow):
             self.width() - self._turn_label.width() - MARGIN - 30,
             MARGIN)
 
+        self._turn_label.raise_()
+
     def _update_overlay(self) -> None:
         self._overlay.adjustSize()
 
@@ -201,7 +194,6 @@ class MainWindow(QMainWindow):
 
         w = self._sim_controls.width()
         h = self._sim_controls.height()
-
         vw = self._view.width()
         vh = self._view.height()
 
@@ -210,6 +202,7 @@ class MainWindow(QMainWindow):
 
         self._sim_controls.set_playing(
             self._simulator.state)
+
         self._sim_controls.raise_()
 
     def resizeEvent(self, a0: QResizeEvent | None) -> None:

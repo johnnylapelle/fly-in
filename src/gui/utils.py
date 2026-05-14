@@ -28,7 +28,7 @@ def get_color(color: str | None) -> str:
         case "black":
             return "#242424"
         case "maroon":
-            return "#9C3819"
+            return "#5B2515"
         case _:
             return color
 
