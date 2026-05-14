@@ -138,23 +138,20 @@ class MainWindow(QMainWindow):
 
     def _load_map_button_clicked(self) -> None:
         try:
-            self._load_map()
+            path, _ = QFileDialog.getOpenFileName(
+                parent=self,
+                caption="Load a map",
+                directory="maps/easy",
+                filter="Txt (*.txt)"
+            )
+
+            if path:
+                self.map_loader.parse(path)
+                self._load_state()
+                self._update_turn_label(0)
         except ConfigFileError as e:
             print(e)
             QMessageBox.warning(self, "ConfigFileError", str(e))
-
-    def _load_map(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(
-            parent=self,
-            caption="Load a map",
-            directory="maps/easy",
-            filter="Txt (*.txt)"
-        )
-
-        if path:
-            self.map_loader.parse(path)
-            self._load_state()
-            self._update_turn_label(0)
 
     def _toggle_labels(self) -> None:
         try:
