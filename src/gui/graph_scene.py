@@ -20,7 +20,7 @@ class GraphScene(QGraphicsScene):
         self._zones_items: list[ZoneItem] = []
         self._connections_items: list[ConnectionItem] = []
         self._drones_items: list[DroneItem] = []
-        self._labels_visible: bool = True
+        self._desc_visible: bool = True
 
         self.setBackgroundBrush(QBrush(QColor("#cbe2fe")))
 
@@ -43,10 +43,10 @@ class GraphScene(QGraphicsScene):
     def drones_items(self) -> list[DroneItem]:
         return self._drones_items
 
-    def toggle_labels(self) -> None:
-        self._labels_visible = not self._labels_visible
+    def toggle_description(self) -> None:
+        self._desc_visible = not self._desc_visible
         for zone in self._zones_items:
-            zone.set_label_visible(self._labels_visible)
+            zone.set_description(self._desc_visible)
 
     def _on_zone_clicked(self, item: ZoneItem) -> None:
-        item.toggle_label()
+        item.toggle_desc()

@@ -26,7 +26,7 @@ class OverlayPanel(QWidget):
         self._btn_toggle_desc.clicked.connect(self.toggle_desc_requested)
         self._btn_reset.clicked.connect(self.reset_requested)
 
-    def set_labels_visible(self, visible: bool) -> None:
+    def set_text_description(self, visible: bool) -> None:
         self._btn_toggle_desc.setText(
             'Hide Description (H)' if visible else 'Show Description (H)'
         )

@@ -27,10 +27,14 @@ class MainWindow(QMainWindow):
 
         self._map_path = map_path
         self._debug = debug
+        self._desc_visible = True
 
         self.setWindowTitle("Fly-in")
         self.setMinimumSize(1280, 720)
         self._setup_ui()
+        self._load_initial_map()
+
+    def _load_initial_map(self) -> None:
         self.map_loader = MapLoader()
 
         if self._map_path is not None:
@@ -39,8 +43,6 @@ class MainWindow(QMainWindow):
         else:
             self.map_loader.parse("maps/easy/01_linear_path.txt")
             self._load_state()
-
-        self._labels_visible = True
 
     def _load_state(self) -> None:
         try:
@@ -82,9 +84,9 @@ class MainWindow(QMainWindow):
         self._sim_controls = SimControls(self)
 
         self._overlay.toggle_desc_requested.connect(
-            self._toggle_labels)
+            self._toggle_description)
         self._overlay.load_map_requested.connect(
-            self._load_map_button_clicked)
+            self._toggle_load_map)
         self._overlay.reset_requested.connect(
             lambda: self._simulator.reset())
 
@@ -126,17 +128,17 @@ class MainWindow(QMainWindow):
 
             shortcut_m = QShortcut(QKeySequence("M"), self)
             shortcut_m.activated.connect(
-                self._load_map_button_clicked)
+                self._toggle_load_map)
 
             shortcut_h = QShortcut(QKeySequence("H"), self)
             shortcut_h.activated.connect(
-                self._toggle_labels)
+                self._toggle_description)
 
         except AttributeError:
             print("Error")
             pass
 
-    def _load_map_button_clicked(self) -> None:
+    def _toggle_load_map(self) -> None:
         try:
             path, _ = QFileDialog.getOpenFileName(
                 parent=self,
@@ -153,11 +155,11 @@ class MainWindow(QMainWindow):
             print(e)
             QMessageBox.warning(self, "ConfigFileError", str(e))
 
-    def _toggle_labels(self) -> None:
+    def _toggle_description(self) -> None:
         try:
-            self._scene.toggle_labels()
-            self._labels_visible = not self._labels_visible
-            self._overlay.set_labels_visible(self._labels_visible)
+            self._scene.toggle_description()
+            self._desc_visible = not self._desc_visible
+            self._overlay.set_text_description(self._desc_visible)
         except AttributeError:
             pass
 

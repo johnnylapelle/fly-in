@@ -33,23 +33,23 @@ class ZoneItem(QGraphicsEllipseItem):
             self.setBrush(brush)
 
         # display zone informations
-        self.label = QGraphicsTextItem(self)
-        self.label.setTextWidth(200)
-        self.label.setHtml(
+        self.desc = QGraphicsTextItem(self)
+        self.desc.setTextWidth(200)
+        self.desc.setHtml(
             f"<center>{self._zone.name}<br>"
             f"{self._zone.type}<br>"
             f"{self._zone.max_drones} drones</center>")
-        rect = self.label.boundingRect()
-        self.label.setPos(-rect.width() / 2, rect.height() / 2 + 25)
-        self.label.setDefaultTextColor(QColor("black"))
+        rect = self.desc.boundingRect()
+        self.desc.setPos(-rect.width() / 2, rect.height() / 2 + 25)
+        self.desc.setDefaultTextColor(QColor("black"))
 
         self._on_click = on_click
 
-    def toggle_label(self) -> None:
-        self.label.setVisible(not self.label.isVisible())
+    def toggle_desc(self) -> None:
+        self.desc.setVisible(not self.desc.isVisible())
 
-    def set_label_visible(self, on_off: bool) -> None:
-        self.label.setVisible(on_off)
+    def set_description(self, on_off: bool) -> None:
+        self.desc.setVisible(on_off)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
         self._on_click(self)
