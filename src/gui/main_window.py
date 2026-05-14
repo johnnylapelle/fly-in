@@ -151,6 +151,8 @@ class MainWindow(QMainWindow):
                 self.map_loader.parse(path)
                 self._load_state()
                 self._update_turn_label(0)
+                self._update_sim_controls()
+                self._simulator.reset()
         except ConfigFileError as e:
             print(e)
             QMessageBox.warning(self, "ConfigFileError", str(e))
