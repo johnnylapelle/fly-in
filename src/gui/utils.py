@@ -1,5 +1,7 @@
 import random
+import typing
 
+from PyQt6.QtWidgets import QApplication, QStyle
 
 SCALE = 200
 RADIUS = SCALE // 2
@@ -39,3 +41,8 @@ def get_fish() -> str:
     ]
 
     return "src/gui/assets/" + random.choice(fishes)
+
+
+def get_style() -> QStyle:
+    inst = typing.cast(QApplication, QApplication.instance())
+    return typing.cast(QStyle, inst.style())

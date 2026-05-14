@@ -2,8 +2,9 @@ import argparse
 import sys
 import traceback
 
+import PyQt6
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QTimeEdit
 
 from src.core.exception import ConfigFileError, GraphError, PathfindingError
 from src.gui.main_window import MainWindow
@@ -20,8 +21,8 @@ def main() -> None:
 
         app = QApplication([])
 
-        font = QFont("Cantarell", 10)
-        app.setFont(font)
+        # font = QFont("Cantarell", 10)
+        # app.setFont(font)
 
         window = MainWindow(map_path=args.map,
                             debug=args.debug)

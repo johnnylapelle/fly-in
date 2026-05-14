@@ -17,6 +17,7 @@ Node = Union[Zone, Connection]
 
 class Simulator(QObject):
     turn_changed = pyqtSignal(int)
+    state_changed = pyqtSignal()
 
     def __init__(self, graph: Graph, drones: list[Drone],
                  drones_items: list[DroneItem],
@@ -50,7 +51,7 @@ class Simulator(QObject):
         elif self.state == SimulationState.PAUSED:
             self._resume()
         elif self.state == SimulationState.FINISHED:
-            self.reset_simulation()
+            self.reset()
 
     def _start(self) -> None:
         self.state = SimulationState.RUNNING
@@ -73,6 +74,7 @@ class Simulator(QObject):
 
     def _finish(self) -> None:
         self.state = SimulationState.FINISHED
+        self.state_changed.emit()
 
     def increase_decrease_turn(self, n: int) -> None:
 
@@ -181,7 +183,7 @@ class Simulator(QObject):
                 pause.start()
                 self.animations.append(pause)
 
-    def reset_simulation(self) -> None:
+    def reset(self) -> None:
         print()
         self.state = SimulationState.IDLE
         for anim in self.animations:
