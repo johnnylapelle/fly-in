@@ -103,12 +103,12 @@ class MainWindow(QMainWindow):
         try:
             shortcut_right = QShortcut(QKeySequence("Right"), self)
             shortcut_right.activated.connect(
-                lambda: self._simulator.increase_decrease_turn(1)
+                lambda: self._toggle_next_prev(1)
                 if hasattr(self, '_simulator') else None)
 
             shortcut_left = QShortcut(QKeySequence("Left"), self)
             shortcut_left.activated.connect(
-                lambda: self._simulator.increase_decrease_turn(-1)
+                lambda: self._toggle_next_prev(-1)
                 if hasattr(self, '_simulator') else None)
 
             shortcut_space = QShortcut(QKeySequence("Space"), self)
