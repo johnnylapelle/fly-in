@@ -2,9 +2,7 @@ import argparse
 import sys
 import traceback
 
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QApplication, QTimeEdit
-import PyQt6
+from PyQt6.QtWidgets import QApplication
 
 from src.core.exception import ConfigFileError, GraphError, PathfindingError
 from src.gui.main_window import MainWindow

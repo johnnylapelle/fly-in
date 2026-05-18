@@ -1,8 +1,9 @@
-from .utils import get_style
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QStyle
-from PyQt6.QtGui import QIcon, QColor, QPainter
+from PyQt6.QtGui import QColor, QIcon, QPainter
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QStyle, QWidget
+
 from ..simulation.simulation_state import SimulationState
+from .utils import get_style
 
 
 class SimControls(QWidget):

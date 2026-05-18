@@ -237,7 +237,7 @@ class MapLoader():
         if not self._is_start_hub or not self._is_end_hub:
             raise ConfigFileError(
                 f"Line {self._lineno} - "
-                "All hubs must be defined before connections.")
+                "Start and end hubs must be defined before connections.")
 
         connection_datas = line.split()
         if len(connection_datas) < 2 or len(connection_datas) > 3:
