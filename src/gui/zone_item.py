@@ -18,8 +18,8 @@ class ZoneItem(QGraphicsEllipseItem):
         self._zone = zone
         self.setPos(zone.x * SCALE, zone.y * SCALE)
 
+        # color
         if zone.color == "rainbow":
-            self.hue = 0
             self.timer = QTimer()
             self.timer.timeout.connect(self.update_color)
             self.timer.start(30)
@@ -56,6 +56,7 @@ class ZoneItem(QGraphicsEllipseItem):
         return super().mousePressEvent(event)
 
     def update_color(self) -> None:
+        self.hue = 0
         color = QColor.fromHsv(self.hue, 255, 255)
 
         self.setBrush(QBrush(color))
