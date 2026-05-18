@@ -41,17 +41,14 @@ class MainWindow(QMainWindow):
             else:
                 self.map_loader.parse("maps/easy/01_linear_path.txt")
                 self._load_state()
-        except ConfigFileError as e:
+        except (ConfigFileError, PathfindingError,
+                FileNotFoundError, PermissionError) as e:
             print(e)
-            QMessageBox.warning(self, "ConfigFileError", str(e))
-            self._reset_state()
-        except PathfindingError as e:
-            print(e)
-            QMessageBox.warning(self, "PathFindingError", str(e))
+            QMessageBox.warning(self, "Error", str(e))
             self._reset_state()
         except Exception as e:
             print(e)
-            QMessageBox.warning(self, "Error", str(e))
+            QMessageBox.warning(self, "Critical Error", str(e))
             sys.exit(1)
 
     def _load_state(self) -> None:
@@ -86,12 +83,9 @@ class MainWindow(QMainWindow):
         self._overlay = OverlayPanel(self)
         self._sim_controls = SimControls(self)
 
-        self._overlay.toggle_desc_requested.connect(
-            self._toggle_description)
-        self._overlay.load_map_requested.connect(
-            self._toggle_load_map)
-        self._overlay.reset_requested.connect(
-            lambda: self._simulator.reset())
+        self._overlay.toggle_desc_requested.connect(self._toggle_description)
+        self._overlay.load_map_requested.connect(self._toggle_load_map)
+        self._overlay.reset_requested.connect(self._toggle_reset)
 
         self._sim_controls.prev_requested.connect(
             lambda: self._toggle_next_prev(-1))
@@ -121,9 +115,7 @@ class MainWindow(QMainWindow):
                 if hasattr(self, '_simulator') else None)
 
             shortcut_r = QShortcut(QKeySequence("R"), self)
-            shortcut_r.activated.connect(
-                lambda: self._simulator.reset()
-                if hasattr(self, '_simulator') else None)
+            shortcut_r.activated.connect(self._toggle_reset)
 
             shortcut_escape = QShortcut(QKeySequence("Escape"), self)
             shortcut_escape.activated.connect(
@@ -187,6 +179,13 @@ class MainWindow(QMainWindow):
             return
 
         self._simulator.increase_decrease_turn(n)
+
+    def _toggle_reset(self) -> None:
+        if not hasattr(self, '_simulator'):
+            return
+
+        self._simulator.reset()
+        self._update_sim_controls()
 
     def _update_turn_label(self, turn: int) -> None:
         self._turn_label.setText(
