@@ -41,9 +41,13 @@ class MainWindow(QMainWindow):
             else:
                 self.map_loader.parse("maps/easy/01_linear_path.txt")
                 self._load_state()
+        except ConfigFileError as e:
+            print(e)
+            QMessageBox.warning(self, "ConfigFileError", str(e))
+            self._reset_state()
         except PathfindingError as e:
             print(e)
-            QMessageBox.warning(self, "Error", str(e))
+            QMessageBox.warning(self, "PathFindingError", str(e))
             self._reset_state()
         except Exception as e:
             print(e)
@@ -208,17 +212,15 @@ class MainWindow(QMainWindow):
 
         w = self._sim_controls.width()
         h = self._sim_controls.height()
-        vw = self._view.width()
-        vh = self._view.height()
+        vw = self.width()
+        vh = self.height()
 
         self._sim_controls.move(
             (vw - w) // 2, vh - h - MARGIN)
 
-        if not hasattr(self, '_simulator'):
-            return
-
-        self._sim_controls.set_playing(
-            self._simulator.state)
+        if hasattr(self, '_simulator'):
+            self._sim_controls.set_playing(
+                self._simulator.state)
 
         self._sim_controls.raise_()
 
