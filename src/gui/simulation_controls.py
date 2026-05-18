@@ -1,6 +1,7 @@
 from .utils import get_style
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QStyle
+from PyQt6.QtGui import QIcon, QColor, QPainter
 from ..simulation.simulation_state import SimulationState
 
 
@@ -30,10 +31,28 @@ class SimControls(QWidget):
 
     def _set_icons(self) -> None:
         style = get_style()
+        white = QColor("white")
 
-        self._btn_prev.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_MediaSkipBackward))
-        self._btn_play.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
-        self._btn_next.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_MediaSkipForward))
+        self._btn_prev.setIcon(self._colorize_icon(
+            style.standardIcon(
+                QStyle.StandardPixmap.SP_MediaSkipBackward), white))
+
+        self._btn_play.setIcon(self._colorize_icon(
+            style.standardIcon(
+                QStyle.StandardPixmap.SP_MediaPlay), white))
+
+        self._btn_next.setIcon(self._colorize_icon(
+            style.standardIcon(
+                QStyle.StandardPixmap.SP_MediaSkipForward), white))
+
+    def _colorize_icon(self, icon: QIcon, color: QColor) -> QIcon:
+        pixmap = icon.pixmap(24, 24)
+        painter = QPainter(pixmap)
+        painter.setCompositionMode(
+            QPainter.CompositionMode.CompositionMode_SourceIn)
+        painter.fillRect(pixmap.rect(), color)
+        painter.end()
+        return QIcon(pixmap)
 
     def set_playing(self, state: SimulationState) -> None:
         if state == SimulationState.RUNNING:
@@ -43,4 +62,6 @@ class SimControls(QWidget):
         else:
             pixmap = (QStyle.StandardPixmap.SP_MediaPlay)
 
-        self._btn_play.setIcon(get_style().standardIcon(pixmap))
+        white = QColor("white")
+        self._btn_play.setIcon(self._colorize_icon(
+            get_style().standardIcon(pixmap), white))
