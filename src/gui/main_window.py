@@ -38,9 +38,9 @@ class MainWindow(QMainWindow):
             if self._map_path is not None:
                 self.map_loader.parse(self._map_path)
                 self._load_state()
-            # else:
-            #     self.map_loader.parse("maps/easy/01_linear_path.txt")
-            #     self._load_state()
+            else:
+                self.map_loader.parse("maps/easy/01_linear_path.txt")
+                self._load_state()
         except PathfindingError as e:
             print(e)
             QMessageBox.warning(self, "Error", str(e))
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(e)
             QMessageBox.warning(self, "Error", str(e))
-            # sys.exit(1)
+            sys.exit(1)
 
     def _load_state(self) -> None:
         self._drones = self.map_loader.drones
@@ -90,14 +90,14 @@ class MainWindow(QMainWindow):
             lambda: self._simulator.reset())
 
         self._sim_controls.prev_requested.connect(
-            lambda: self._simulator.increase_decrease_turn(-1))
+            lambda: self._toggle_next_prev(-1))
         self._sim_controls.next_requested.connect(
-            lambda: self._simulator.increase_decrease_turn(1))
+            lambda: self._toggle_next_prev(1))
         self._sim_controls.play_requested.connect(self._toggle_play)
 
         self._setup_shortcut()
-        # QTimer.singleShot(0, self._update_sim_controls)
-        # QTimer.singleShot(0, self._update_overlay)
+        QTimer.singleShot(0, self._update_sim_controls)
+        QTimer.singleShot(0, self._update_overlay)
 
     def _setup_shortcut(self) -> None:
         try:
@@ -170,10 +170,19 @@ class MainWindow(QMainWindow):
             pass
 
     def _toggle_play(self) -> None:
+        if not hasattr(self, '_simulator'):
+            return
+
         self._simulator.toggle()
 
         self._sim_controls.set_playing(
             self._simulator.state)
+
+    def _toggle_next_prev(self, n: int) -> None:
+        if not hasattr(self, '_simulator'):
+            return
+
+        self._simulator.increase_decrease_turn(n)
 
     def _update_turn_label(self, turn: int) -> None:
         self._turn_label.setText(
@@ -195,9 +204,6 @@ class MainWindow(QMainWindow):
         self._overlay.raise_()
 
     def _update_sim_controls(self) -> None:
-        if not hasattr(self, '_simulator'):
-            return
-
         self._sim_controls.adjustSize()
 
         w = self._sim_controls.width()
@@ -207,6 +213,9 @@ class MainWindow(QMainWindow):
 
         self._sim_controls.move(
             (vw - w) // 2, vh - h - MARGIN)
+
+        if not hasattr(self, '_simulator'):
+            return
 
         self._sim_controls.set_playing(
             self._simulator.state)
