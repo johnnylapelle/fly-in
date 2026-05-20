@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    simulator.py                                       :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: jvacossi <jvacossi@student.42lyon.fr>      +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/05/20 10:21:07 by jvacossi          #+#    #+#              #
-#    Updated: 2026/05/20 10:22:35 by jvacossi         ###   ########lyon.fr    #
-#                                                                              #
-# **************************************************************************** #
-
 from typing import Union
 
 from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve, QObject,
