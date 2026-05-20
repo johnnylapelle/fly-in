@@ -29,7 +29,7 @@ The connections in-between zones can also have metadatas:
 - **max_link_capacity=\<number\>**: Maximum drones that can traverse this connection simultaneously. By default it's 1.
 
 ### The Map/Graph
-Here is a **example** of a graph that represent the network of zones:
+Here is a **file example** of a graph that represent the network of zones:
 ```
 nb_drones: 5
 

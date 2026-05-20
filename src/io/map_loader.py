@@ -314,7 +314,9 @@ class MapLoader():
                 key=key,
                 zone_a=zone_a,
                 zone_b=zone_b,
-                max_capacity=max_link_cap_int
+                max_capacity=max_link_cap_int,
+                is_restricted=(zone_a.type == "restricted"
+                               or zone_b.type == "restricted")
             )
 
     def _parse_metadatas(self, line: str,

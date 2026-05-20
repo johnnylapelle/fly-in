@@ -77,3 +77,9 @@ class Graph():
         if name in self._zones:
             return self._zones[name].max_drones
         raise GraphError(f"'{name} not found in zones or connections.")
+
+    def get_connection(self, a: Zone, b: Zone) -> Connection:
+        for connection in self.get_neighbours(a):
+            if connection.get_other(a) == b:
+                return connection
+        return None

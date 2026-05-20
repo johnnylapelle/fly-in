@@ -30,6 +30,10 @@ class Pathfinding:
             drone.position = start
             start.current_nb_drone += 1
             drone.path = self._space_time_a_star()
+            drone._sim_path = [(node, t) for node, t in drone.path
+                               if isinstance(node, Zone) or
+                               (isinstance(node, Connection)
+                                and node.is_restricted)]
 
     def _reverse_dijkstra(self) -> None:
         start = self._graph.end
@@ -118,7 +122,9 @@ class Pathfinding:
                         path[transit_state] = (current_state)
                         path[next_state] = transit_state
                     else:
-                        path[next_state] = current_state
+                        transit_state = (connection, turn)
+                        path[transit_state] = current_state
+                        path[next_state] = transit_state
 
             # wait action
             wait_state = (current, turn + 1)

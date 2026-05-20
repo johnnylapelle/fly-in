@@ -4,12 +4,14 @@ from .zone import Zone
 class Connection():
     def __init__(
             self,
-            key: str, zone_a: Zone, zone_b: Zone, max_capacity: int) -> None:
+            key: str, zone_a: Zone, zone_b: Zone,
+            max_capacity: int, is_restricted: bool) -> None:
         self.key = key
         self.zone_a = zone_a
         self.zone_b = zone_b
         self.max_capacity = max_capacity
         self.current_nb_drone = 0
+        self.is_restricted = is_restricted
 
     def get_other(self, zone: Zone) -> Zone:
         # get the neighbor zone connected to zone

@@ -107,8 +107,8 @@ class Simulator(QObject):
 
         for i, drone in enumerate(self._drones):
             try:
-                start_node, _ = drone.path[from_turn]
-                end_node, _ = drone.path[to_turn]
+                start_node, _ = drone.sim_path[from_turn]
+                end_node, _ = drone.sim_path[to_turn]
                 moves.append((i, start_node, end_node))
             except IndexError:
                 continue
@@ -144,7 +144,7 @@ class Simulator(QObject):
 
     def _get_max_turn(self) -> None:
         for drone in self._drones:
-            for item, turn in drone.path:
+            for item, turn in drone.sim_path:
                 if turn > self._max_turn:
                     self._max_turn = turn
 

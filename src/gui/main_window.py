@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
                 self._update_turn_label(0)
                 self._update_sim_controls()
                 self._simulator.reset()
-        except PathfindingError as e:
+        except (PathfindingError, ConfigFileError) as e:
             print(e)
             QMessageBox.warning(self, "PathFindingError", str(e))
             self._reset_state()

@@ -11,6 +11,7 @@ class Drone:
         self._id: int = id
         self._position: Node | None = None
         self._path: list[tuple[Node, int]] = []
+        self._sim_path: list[tuple[Node, int]] = []
         self._is_arrived: bool = False
 
     @property
@@ -32,6 +33,14 @@ class Drone:
     @path.setter
     def path(self, path: list[tuple[Node, int]]) -> None:
         self._path = path
+
+    @property
+    def sim_path(self) -> list[tuple[Node, int]]:
+        return self._sim_path
+
+    @sim_path.setter
+    def sim_path(self, path: list[tuple[Node, int]]) -> None:
+        self._sim_path = path
 
     @property
     def is_arrived(self) -> bool:
