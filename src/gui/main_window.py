@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
             path, _ = QFileDialog.getOpenFileName(
                 parent=self,
                 caption="Load a map",
-                directory="maps/easy",
+                directory="maps",
                 filter="Txt (*.txt)"
             )
 
