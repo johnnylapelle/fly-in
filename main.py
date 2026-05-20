@@ -19,9 +19,6 @@ def main() -> None:
 
         app = QApplication([])
 
-        # font = QFont("Cantarell", 10)
-        # app.setFont(font)
-
         window = MainWindow(map_path=args.map,
                             debug=args.debug)
         window.show()

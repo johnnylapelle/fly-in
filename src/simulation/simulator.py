@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    simulator.py                                       :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: jvacossi <jvacossi@student.42lyon.fr>      +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2026/05/20 10:21:07 by jvacossi          #+#    #+#              #
+#    Updated: 2026/05/20 10:22:35 by jvacossi         ###   ########lyon.fr    #
+#                                                                              #
+# **************************************************************************** #
+
 from typing import Union
 
 from PyQt6.QtCore import (QAbstractAnimation, QEasingCurve, QObject,
@@ -200,6 +212,15 @@ class Simulator(QObject):
 
         for drone_item in self._drones_items:
             drone_item.move()
+
+        for zone in self._graph.zones.values():
+            if zone.is_start:
+                zone.current_nb_drone = len(self._drones)
+            else:
+                zone.current_nb_drone = 0
+
+        for co in self._graph.connections.values():
+            co.current_nb_drone = 0
 
     def _track_node_stats(self, leave: Node | None,
                           enter: Node | None) -> None:
