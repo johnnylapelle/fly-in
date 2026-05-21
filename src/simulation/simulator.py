@@ -16,12 +16,34 @@ Node = Union[Zone, Connection]
 
 
 class Simulator(QObject):
+    """
+    Drives the step-by-step animation of drones moving through the graph.
+
+    Reads pre-computed paths from each drone and animates their movement
+    turn by turn using Qt property animations. Exposes playback controls
+    (play, pause, resume, reset) and emits signals when the turn or state
+    changes.
+
+    Signals:
+        turn_changed (int): Emitted whenever the current turn advances or
+            moves backwards, carrying the new turn number.
+        state_changed: Emitted when the simulation state changes
+            (e.g. from RUNNING to FINISHED).
+    """
+
     turn_changed = pyqtSignal(int)
     state_changed = pyqtSignal()
 
     def __init__(self, graph: Graph, drones: list[Drone],
                  drones_items: list[DroneItem],
                  debug: bool) -> None:
+        """
+        Args:
+            graph: The graph the drones navigate through.
+            drones: List of drones with pre-computed paths.
+            drones_items: Corresponding Qt graphical items for each drone.
+            debug: If True, prints zone occupancy stats after each turn.
+        """
 
         super().__init__()
 
@@ -44,6 +66,12 @@ class Simulator(QObject):
         self._get_max_turn()
 
     def toggle(self) -> None:
+        """
+        Toggles the simulation state machine.
+
+        IDLE → RUNNING → PAUSED → RUNNING → FINISHED → IDLE.
+        """
+
         if self.state == SimulationState.IDLE:
             self._start()
         elif self.state == SimulationState.RUNNING:
@@ -54,11 +82,15 @@ class Simulator(QObject):
             self.reset()
 
     def _start(self) -> None:
+        """Sets state to RUNNING and plays the first turn."""
+
         self.state = SimulationState.RUNNING
 
         self._play_next_turn()
 
     def _pause(self) -> None:
+        """Pauses all running animations and sets state to PAUSED."""
+
         for anim in self.animations:
             if anim.state() == QAbstractAnimation.State.Running:
                 anim.pause()
@@ -66,6 +98,8 @@ class Simulator(QObject):
         self.state = SimulationState.PAUSED
 
     def _resume(self) -> None:
+        """Resumes all paused animations and sets state to RUNNING."""
+
         for anim in self.animations:
             if anim.state() == QAbstractAnimation.State.Paused:
                 anim.resume()
@@ -73,10 +107,21 @@ class Simulator(QObject):
         self.state = SimulationState.RUNNING
 
     def _finish(self) -> None:
+        """Sets state to FINISHED and emits state_changed."""
+
         self.state = SimulationState.FINISHED
         self.state_changed.emit()
 
     def increase_decrease_turn(self, n: int) -> None:
+        """
+        Moves the simulation forward or backward by n turns.
+
+        Resets state to IDLE before animating. Does nothing if the
+        resulting turn would be out of bounds.
+
+        Args:
+            n: Number of turns to advance (positive) or rewind (negative).
+        """
 
         if n == -1 and self.turn <= 0:
             return
@@ -94,6 +139,11 @@ class Simulator(QObject):
         self._animate_step(moves)
 
     def _play_next_turn(self) -> None:
+        """
+        Advances the simulation by one turn and triggers animation.
+        Calls _finish if the last turn has been reached.
+        """
+
         if self.turn >= self._max_turn:
             self._finish()
             return
@@ -107,6 +157,19 @@ class Simulator(QObject):
             self,
             from_turn: int,
             to_turn: int) -> list[tuple[int, Node, Node]]:
+        """
+        Computes the list of drone movements between two turns.
+
+        Looks up each drone's position at from_turn and to_turn in its
+        sim_path, matching by turn value rather than list index.
+
+        Args:
+            from_turn: The turn to move from.
+            to_turn: The turn to move to.
+
+        Returns:
+            A list of (drone_index, start_node, end_node) tuples.
+        """
 
         moves = []
 
@@ -126,6 +189,16 @@ class Simulator(QObject):
     def _animate_step(
             self,
             moves: list[tuple[int, Node, Node]]) -> None:
+        """
+        Starts a QPropertyAnimation for each drone move.
+
+        Each animation interpolates the drone's graphical item from its
+        start position to its end position over 300ms. Calls
+        _on_move_finished when each animation completes.
+
+        Args:
+            moves: List of (drone_index, start_node, end_node) tuples.
+        """
 
         if not moves:
             return
@@ -151,12 +224,31 @@ class Simulator(QObject):
             self.animations.append(anim)
 
     def _get_max_turn(self) -> None:
+        """
+        Computes and stores the highest turn number across all drone paths.
+        Used to determine when the simulation is finished.
+        """
+
         for drone in self._drones:
             for item, turn in drone.sim_path:
                 if turn > self._max_turn:
                     self._max_turn = turn
 
     def _get_pose(self, node: Zone | Connection) -> QPointF:
+        """
+        Returns the scene position of a node.
+
+        For zones, returns the zone's coordinates scaled by SCALE.
+        For connections, returns the midpoint between the two connected
+        zones, scaled by SCALE.
+
+        Args:
+            node: A Zone or Connection instance.
+
+        Returns:
+            The corresponding QPointF position in the scene.
+        """
+
         if isinstance(node, Zone):
             return QPointF(node.x * SCALE, node.y * SCALE)
 
@@ -166,6 +258,19 @@ class Simulator(QObject):
             return QPointF(x * SCALE, y * SCALE)
 
     def _on_move_finished(self, idx: int, node: Node) -> None:
+        """
+        Callback triggered when a drone animation completes.
+
+        Updates the drone's position, logs the move if it changed, and
+        decrements the pending move counter. When all moves for a turn
+        are done, triggers the next turn if RUNNING, or prints debug
+        stats if enabled.
+
+        Args:
+            idx: Index of the drone that finished moving.
+            node: The node the drone has arrived at.
+        """
+
         drone = self._drones[idx]
 
         prev_position = drone.position
@@ -192,6 +297,13 @@ class Simulator(QObject):
                 self.animations.append(pause)
 
     def reset(self) -> None:
+        """
+        Resets the simulation to its initial state.
+
+        Stops all animations, resets turn counter and drone positions,
+        and restores zone and connection occupancy counts.
+        """
+
         print()
         self.state = SimulationState.IDLE
         for anim in self.animations:
@@ -220,12 +332,22 @@ class Simulator(QObject):
 
     def _track_node_stats(self, leave: Node | None,
                           enter: Node | None) -> None:
+        """
+        Updates the current_nb_drone counter on nodes.
+
+        Args:
+            leave: The node the drone is leaving (decremented).
+            enter: The node the drone is entering (incremented).
+        """
+
         if leave is not None:
             leave.current_nb_drone -= 1
         if enter is not None:
             enter.current_nb_drone += 1
 
     def _print_node_stats(self) -> None:
+        """Prints current drone occupancy for every zone in the graph."""
+
         for zone in self._graph.zones.values():
             print(f"{zone.name} "
                   f"{zone.current_nb_drone}/{zone.max_drones}")

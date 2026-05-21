@@ -1,5 +1,9 @@
 Todo:
-	- mode "libre" genre bac à sable pour tester les maps soi-meme
+	- Pathfinding
+	- IO
+	- GUI
+	- Core
+
 
 TODO GLOBALE:
 - GUI

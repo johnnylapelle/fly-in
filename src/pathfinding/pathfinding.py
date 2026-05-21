@@ -12,7 +12,27 @@ Node = Union[Zone | Connection]
 
 
 class Pathfinding:
+    """
+    Computes collision-free paths for all drones using Space-Time A*.
+
+    First runs a reverse Dijkstra from the end zone to build an admissible
+    heuristic for every zone. Then processes each drone sequentially,
+    running Space-Time A* and reserving the resulting path in a shared
+    reservation table so subsequent drones route around it.
+    """
+
     def __init__(self, graph: Graph, drones: list[Drone]) -> None:
+        """
+        Initializes the pathfinder and computes the heuristic.
+
+        Runs reverse Dijkstra immediately on construction. Raises
+        PathfindingError if the end zone is unreachable from the start.
+
+        Args:
+            graph: The graph to pathfind through.
+            drones: List of drones to compute paths for.
+        """
+
         self._graph = graph
         self._drones = drones
         self._heuristic: dict[Zone, float] = {}
@@ -21,9 +41,23 @@ class Pathfinding:
 
     @property
     def res_table(self) -> ReservationTable:
+        """The shared reservation table built during path computation."""
+
         return self._res_table
 
     def compute_path(self) -> None:
+        """
+        Computes and assigns a path to each drone sequentially.
+
+        Each drone starts at the graph's start zone. Paths are computed
+        one by one — each drone is constrained by the reservations left
+        by previously processed drones.
+
+        Also builds drone.sim_path, a filtered version of the full path
+        containing only zones and restricted connections, used by the
+        simulator for animation.
+        """
+
         start = self._graph.start
 
         for drone in self._drones:
@@ -36,6 +70,15 @@ class Pathfinding:
                                 and node.is_restricted)]
 
     def _reverse_dijkstra(self) -> None:
+        """
+        Computes the heuristic for every zone via reverse Dijkstra.
+
+        Runs Dijkstra from the end zone backwards through the graph,
+        ignoring temporal constraints and blocked zones. The resulting
+        cost for each zone represents the minimum distance to the
+        destination and serves as an admissible heuristic for A*.
+        """
+
         start = self._graph.end
         goal = self._graph.start
         frontier: PriorityQueue[Any] = PriorityQueue()
@@ -64,6 +107,22 @@ class Pathfinding:
                 "(reverse_dijkstra) No solution found.")
 
     def _space_time_a_star(self) -> list[tuple[Node, int]]:
+        """
+        Finds the optimal path for one drone using Space-Time A*.
+
+        Operates on (zone, turn) states to account for temporal
+        constraints. At each state, the drone can either move to a
+        neighboring zone or wait in place. Movements are only considered
+        if both the connection and the destination zone are available in
+        the reservation table at the relevant turn.
+
+        Connections are stored as intermediate states in the path to
+        allow the reservation table to track their occupancy.
+
+        Returns:
+            A list of (node, turn) tuples representing the full path,
+            including intermediate connection states.
+        """
 
         path: dict[tuple[Node, int], tuple[Node, int] | None] = {}
         cost_so_far: dict[tuple[Node, int], int] = {}
@@ -152,6 +211,20 @@ class Pathfinding:
                        tuple[Node, int] | None],
             turn: int,
             goal: Zone) -> list[tuple[Node, int]]:
+        """
+        Reconstructs the full path by backtracking through parent states.
+
+        Follows the chain of parent pointers from (goal, turn) back to
+        the start state (None), then reverses the result.
+
+        Args:
+            path: Dictionary mapping each state to its parent state.
+            turn: The turn at which the goal was reached.
+            goal: The destination zone.
+
+        Returns:
+            The ordered list of (node, turn) states from start to goal.
+        """
 
         correct_path: list[tuple[Node, int]] = []
         current: tuple[Node, int] | None = (goal, turn)
@@ -167,6 +240,18 @@ class Pathfinding:
         return correct_path
 
     def _reserve_path(self, path: list[tuple[Node, int]]) -> None:
+        """
+        Reserves all zones and connections in the path.
+
+        Each (node, turn) pair is registered in the reservation table.
+        Zones are reserved by name, connections by key. This prevents
+        subsequent drones from occupying the same location at the same
+        turn.
+
+        Args:
+            path: The full path returned by _reconstruct_path.
+        """
+
         for item, turn in path:
             if isinstance(item, Zone):
                 self._res_table.reserve(item.name, turn)
