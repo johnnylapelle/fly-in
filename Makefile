@@ -9,9 +9,13 @@ install:
 	uv sync
 	@echo "Installation done!"
 
-run:
+run: install
 	@echo "Running..."
 	uv run python main.py $(ARGS)
+
+debug: install
+	@echo "Running in debug mode..."
+	uv run python -m pdb main.py $(ARGS)
 
 lint:
 	@echo "Linting..."

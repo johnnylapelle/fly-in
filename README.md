@@ -4,8 +4,7 @@
 ![](assets/banner2.png)
 
 ## Description
-Fly-in is an **efficient drone routing system** that navigates **multiple drones**
-through **connected zones** while minimizing **simulation turns** and handling **movement constraints**.
+Fly-in is an **efficient drone routing system** that navigates **multiple drones** (represented by fishes) through **connected zones** while minimizing **simulation turns** and handling **movement constraints**.
 
 This project efficiently route a fleet of drones from a **central base (start)** to a **target location (end)** while navigating this dynamic network under a set of strict constraints and optimization goals.
 
@@ -48,18 +47,102 @@ connection: roof2-goal
 connection: corridorA-tunnelB [max_link_capacity=2]
 connection: tunnelB-goal
 ```
+Rules:
+- The first line defines the number of drones using nb_drones: <number>.
+- start_hub: <name> <x> <y> [metadata] marks the starting zone.
+- end_hub: <name> <x> <y> [metadata] marks the end zone.
+- hub: <name> <x> <y> [metadata] defines a regular zone.
+- All metadata is optional and enclosed in brackets [...] with default values:
+- zone=<type> (default: normal)
+- color=<value> (default: none)
+- max_drones=<number> (default: 1) - Maximum drones that can occupy this zone simultaneously
+- Tags inside brackets can appear in any order.
 
 Wich will give:
 ![](assets/example_map.png)
 
 ## Instruction
-section containing any relevant information about compilation, installation and execution
+Install the dependencies.
+``` sh
+make install
+```
+
+Run the program, by default the program will run a map from the maps folder. You can optionally specify custom paths using the --map argument.
+``` sh
+make run
+
+make run ARGS="--map maps/map.txt"
+```
+
+Run the program in debug mode.
+```sh
+make debug
+```
 
 ## Algorithm
-detailed description of the algorithm and implementation strategy
 
-## Visual Representation
-documentation of the visual representation features and how they enhance the user experience
+### Overview
+Each drone is assigned a path sequentially. For each drone, a
+**Space-Time A*** algorithm finds the optimal route through the graph,
+taking into account both spatial constraints (zone and connection
+capacities) and temporal constraints (which zones and connections are
+already reserved at a given turn).
+
+To guide A* efficiently, a **reverse Dijkstra** is run once before any
+drone is processed. Starting from the end zone, it computes the minimum
+travel cost from every zone to the destination. This serves as an heuristic.
+
+Conflicts between drones are resolved through a **reservation table**,
+which tracks zone and connection occupancy at each turn. Once a drone's
+path is computed, its zones and connections are reserved, constraining
+the search space for subsequent drones. If a route is blocked, a drone
+can wait in place until it becomes available.
+
+### Heuristic - Reverse Dijkstra
+Before any drone is processed, a **reverse Dijkstra** run backward, from the end to every single zone. This produce a cost estimate for every zone. Roughly, how far is this zone from the destination ?
+
+This estimate is used by A*. Its work like a compass, at each step, the algortihm prioritizes zones that appears closest to the goal. This reduces the number of routes evaluated before finding the optimal path.
+
+### Pathfinding - Space-Time A*
+The classic **A\* Algorithm** finds the shortest path from a starting point from and end point.
+But in our case this is not enough due to the zone's and connection's capacity constraints.
+
+To handle this, the algorithm operates on **zones and turns** instead of just zones. This time dimension allow the algorithm to distinguish between "drone at zone X at turn 3" and "drone at zone X at turn 7" and to plan around congestion rather than just distance.
+
+At each step a drone has two options:
+-	**Move** to a neighboring zone if the route is available at that turn.
+-	**Wait** in place.
+
+### Multi-drone resolution
+Drones are processed one-by-one. The first drone finds its optimal path freely. Each subsequent drone is constrained by the reservations left by previous drones.
+
+Once a path is computed, every zone and connection it uses is reserved in a **reservation table**, keyed by location and turn. This table is the shared memory between drones, it is what prevents collisions.
+
+### Complexity
+**Reverse Dijkstra** runs once and visits every zone in the graph.
+Its time complexity is **O(N log N)**, where N is the number of zones.
+
+**Space-Time A*** operates on a graph of **(zone, turn)** states. In the
+worst case, every zone is visited at every turn, giving a state space of
+**O(N × T)** per drone, where T is the maximum number of turns required
+to reach the destination. With D drones processed sequentially, the
+total time complexity is **O(D × N × T × log(N × T))**.
+
+In practice, the heuristic significantly reduces the number of states
+explored — most routes are pruned early, and drones rarely need to wait
+long. Real-world performance is considerably better than the worst case.
+
+### Visual Representation
+The simulation comes with an interactive graphical interface that renders
+the graph and animates each drone moving through it in real time. This
+makes it straightforward to verify that paths are correct, spot
+congestion, and observe how drones coordinate around each other.
+
+Maps can be loaded directly from the interface, making it easy to switch
+between scenarios without restarting the application. Playback controls
+allow stepping through the simulation turn by turn, playing it
+automatically, or jumping forwards and backwards to inspect any moment
+of the flight.
 
 ## Resources
 ### Pathfinding algorithm
@@ -76,11 +159,10 @@ documentation of the visual representation features and how they enhance the use
 ### Miscellaneous
 - https://fr.wikipedia.org/wiki/PSPACE
 
-## Workflow:
-- Parser/MapLoad
-- Creation of the Graph
-- GUI with the visualisation of the Graph
-- Pathfinding Algorithm
-	- BFS -> Dijkstra (heuristic function for A*)
-	- A* space/time
-- GUI animation and UX
+## AI Usage
+- **Socratic guidance**: Rather than requesting direct solutions, AI was used as a thinking partner — asking the right questions to guide independent implementation decisions.
+- **Code review**:
+- **Documentation**: AI assisted in writing docstrings following PEP 257 (Google style) and drafting README sections including Algorithm Explanation and Complexity.
+- **Research synthesis**: AI summarized academic papers and blog posts on Pathfinding Algorithm and identified which concepts were applicable to the project.
+- **PyQt6**: Learned with help of AI.
+
