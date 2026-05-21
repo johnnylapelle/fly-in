@@ -200,12 +200,12 @@ class MainWindow(QMainWindow):
             fmap = ""
 
         self._turn_label.setText(
-            f"{fmap}     {fturn}     {fdrone}")
+            f"{fmap}       {fturn}       {fdrone}")
 
         self._turn_label.adjustSize()
 
         self._turn_label.move(
-            self.width() - self._turn_label.width() - MARGIN - 30,
+            self.width() - self._turn_label.width() - MARGIN,
             MARGIN)
 
         self._turn_label.raise_()

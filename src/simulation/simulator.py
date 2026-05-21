@@ -113,17 +113,14 @@ class Simulator(QObject):
         for i, drone in enumerate(self._drones):
             try:
                 start_node = next(
-                    node for node, t in drone.sim_path if t == from_turn
-                    and isinstance(node, Zone))
+                    node for node, t in drone.sim_path if t == from_turn)
                 end_node = next(
-                    node for node, t in drone.sim_path if t == to_turn
-                    and isinstance(node, Zone))
+                    node for node, t in drone.sim_path if t == to_turn)
 
                 moves.append((i, start_node, end_node))
             except StopIteration:
                 continue
 
-        print(self.turn)
         return moves
 
     def _animate_step(
@@ -183,7 +180,6 @@ class Simulator(QObject):
         self._pending_moves -= 1
 
         if self._pending_moves == 0:
-            print(f"Turn {self.turn}")
             print(" ".join(self._current_logs))
 
             if self._debug:
