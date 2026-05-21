@@ -132,7 +132,8 @@ In practice, the heuristic significantly reduces the number of states
 explored — most routes are pruned early, and drones rarely need to wait
 long. Real-world performance is considerably better than the worst case.
 
-### Visual Representation
+## Visual Representation
+![](assets/visual_repr.png)
 The simulation comes with an interactive graphical interface that renders
 the graph and animates each drone moving through it in real time. This
 makes it straightforward to verify that paths are correct, spot
