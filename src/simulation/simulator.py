@@ -113,9 +113,11 @@ class Simulator(QObject):
         for i, drone in enumerate(self._drones):
             try:
                 start_node = next(
-                    node for node, t in drone.sim_path if t == from_turn and isinstance(node, Zone))
+                    node for node, t in drone.sim_path if t == from_turn
+                    and isinstance(node, Zone))
                 end_node = next(
-                    node for node, t in drone.sim_path if t == to_turn and isinstance(node, Zone))
+                    node for node, t in drone.sim_path if t == to_turn
+                    and isinstance(node, Zone))
 
                 moves.append((i, start_node, end_node))
             except StopIteration:

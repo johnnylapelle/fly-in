@@ -9,9 +9,9 @@ class TurnLabel(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         self._turn_label = QLabel()
-        self._turn_label.setText('Turn: 0  Drones: 0')
+        self._turn_label.setText('Map: test  Turn: 0  Drones: 0')
         self._turn_label.setStyleSheet('''
-                font-size: 25px;
+                font-size: 20px;
                 color: black;''')
         self._turn_label.adjustSize()
 

@@ -46,3 +46,9 @@ def get_fish() -> str:
 def get_style() -> QStyle:
     inst = typing.cast(QApplication, QApplication.instance())
     return typing.cast(QStyle, inst.style())
+
+
+def parse_name_map(map: str) -> str:
+    name = map.split('/')
+    name = name[-1].split('.')
+    return name[0]

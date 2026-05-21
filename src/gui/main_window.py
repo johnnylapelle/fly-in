@@ -15,7 +15,7 @@ from .graph_view import GraphView
 from .overlay_panel import OverlayPanel
 from .simulation_controls import SimControls
 from .turn_label import TurnLabel
-from .utils import MARGIN
+from .utils import MARGIN, parse_name_map
 
 
 class MainWindow(QMainWindow):
@@ -36,10 +36,13 @@ class MainWindow(QMainWindow):
             self.map_loader = MapLoader()
 
             if self._map_path is not None:
+                self.path = parse_name_map(self._map_path)
                 self.map_loader.parse(self._map_path)
                 self._load_state()
             else:
+                default_map = "maps/easy/01_linear_path.txt"
                 self.map_loader.parse("maps/easy/01_linear_path.txt")
+                self.path = parse_name_map(default_map)
                 self._load_state()
         except (ConfigFileError, PathfindingError,
                 FileNotFoundError, PermissionError) as e:
@@ -139,15 +142,16 @@ class MainWindow(QMainWindow):
                 parent=self,
                 caption="Load a map",
                 directory="maps",
-                filter="Txt (*.txt)"
-            )
+                filter="Txt (*.txt)")
 
             if path:
+                self.path = parse_name_map(path)
                 self.map_loader.parse(path)
                 self._load_state()
                 self._update_turn_label(0)
                 self._update_sim_controls()
                 self._simulator.reset()
+
         except (PathfindingError, ConfigFileError) as e:
             print(e)
             QMessageBox.warning(self, "PathFindingError", str(e))
@@ -188,8 +192,15 @@ class MainWindow(QMainWindow):
         self._update_sim_controls()
 
     def _update_turn_label(self, turn: int) -> None:
+        fturn = f"Turn: {turn}"
+        fdrone = f"Drones: {self.map_loader.nb_drones}"
+        if hasattr(self, 'path'):
+            fmap = f"Map: {self.path}"
+        else:
+            fmap = ""
+
         self._turn_label.setText(
-            f"     Turn: {turn}     Drones: {self.map_loader.nb_drones}")
+            f"{fmap}     {fturn}     {fdrone}")
 
         self._turn_label.adjustSize()
 
@@ -236,8 +247,15 @@ class MainWindow(QMainWindow):
 
     def _reset_state(self) -> None:
         for attr in ('_graph', '_pathfinder', '_simulator', '_scene',
-                     '_res_table', '_drones', '_zones', '_connections'):
+                     '_res_table', '_drones', '_zones', '_connections',
+                     'path'):
             if hasattr(self, attr):
                 delattr(self, attr)
 
         self._view.setScene(None)
+
+        self.map_loader.nb_drones = 0
+
+        self._update_overlay()
+        self._update_sim_controls()
+        self._update_turn_label(0)

@@ -38,6 +38,10 @@ class MapLoader():
     def nb_drones(self) -> int:
         return self._nb_drones
 
+    @nb_drones.setter
+    def nb_drones(self, n: int) -> None:
+        self._nb_drones = n
+
     def parse(self, file: str) -> None:
         self._reset()
 
