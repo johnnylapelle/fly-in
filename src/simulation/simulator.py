@@ -83,7 +83,12 @@ class Simulator(QObject):
         elif n == 1 and self.turn >= self._max_turn:
             return
 
+        # change the state and icon to IDLE
+        self.state = SimulationState.IDLE
+        self.state_changed.emit()
+
         moves = self._get_moves(self.turn, self.turn + n)
+
         self.turn += n
         self.turn_changed.emit(self.turn)
         self._animate_step(moves)
@@ -107,12 +112,16 @@ class Simulator(QObject):
 
         for i, drone in enumerate(self._drones):
             try:
-                start_node, _ = drone.sim_path[from_turn]
-                end_node, _ = drone.sim_path[to_turn]
+                start_node = next(
+                    node for node, t in drone.sim_path if t == from_turn and isinstance(node, Zone))
+                end_node = next(
+                    node for node, t in drone.sim_path if t == to_turn and isinstance(node, Zone))
+
                 moves.append((i, start_node, end_node))
-            except IndexError:
+            except StopIteration:
                 continue
 
+        print(self.turn)
         return moves
 
     def _animate_step(
@@ -172,6 +181,7 @@ class Simulator(QObject):
         self._pending_moves -= 1
 
         if self._pending_moves == 0:
+            print(f"Turn {self.turn}")
             print(" ".join(self._current_logs))
 
             if self._debug:
