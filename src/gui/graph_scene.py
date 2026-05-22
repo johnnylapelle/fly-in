@@ -9,10 +9,20 @@ from .zone_item import ZoneItem
 
 
 class GraphScene(QGraphicsScene):
-    # def __init__(self):
-    #     super().__init__()
+    """
+    Qt scene that renders the graph and all its entities.
+
+    Populates itself on construction with ConnectionItem, ZoneItem, and
+    DroneItem instances for every connection, zone, and drone in the graph.
+    """
 
     def __init__(self, graph: Graph, drones: list[Drone]):
+        """
+        Args:
+            graph: The graph whose zones and connections are rendered.
+            drones: The list of drones to render in the scene.
+        """
+
         super().__init__()
 
         self.graph = graph
@@ -41,12 +51,23 @@ class GraphScene(QGraphicsScene):
 
     @property
     def drones_items(self) -> list[DroneItem]:
+        """Graphical items for each drone, in the same order as the drone list."""
+
         return self._drones_items
 
     def toggle_description(self) -> None:
+        """Toggles the visibility of descriptions on all zone items."""
+
         self._desc_visible = not self._desc_visible
         for zone in self._zones_items:
             zone.set_description(self._desc_visible)
 
     def _on_zone_clicked(self, item: ZoneItem) -> None:
+        """
+        Callback triggered when a zone item is clicked.
+
+        Args:
+            item: The ZoneItem that was clicked.
+        """
+
         item.toggle_desc()

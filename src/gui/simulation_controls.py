@@ -7,11 +7,30 @@ from .utils import get_style
 
 
 class SimControls(QWidget):
+    """
+    Playback control bar with previous, play/pause, and next buttons.
+
+    Displayed at the bottom center of the window. Emits signals on user
+    interaction. The play button icon updates to reflect the current
+    simulation state.
+
+    Signals:
+        prev_requested: Emitted when the user clicks the previous button.
+        play_requested: Emitted when the user clicks the play/pause button.
+        next_requested: Emitted when the user clicks the next button.
+    """
+
     prev_requested = pyqtSignal()
     play_requested = pyqtSignal()
     next_requested = pyqtSignal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
+        """
+        Args:
+            parent: Parent widget. Pass the main window to render
+                the controls as an overlay.
+        """
+
         super().__init__(parent)
 
         layout = QHBoxLayout(self)
@@ -31,6 +50,8 @@ class SimControls(QWidget):
         self._set_icons()
 
     def _set_icons(self) -> None:
+        """Sets the initial white icons on all three buttons."""
+
         style = get_style()
         white = QColor("white")
 
@@ -47,6 +68,20 @@ class SimControls(QWidget):
                 QStyle.StandardPixmap.SP_MediaSkipForward), white))
 
     def _colorize_icon(self, icon: QIcon, color: QColor) -> QIcon:
+        """
+        Returns a recolored copy of the given icon.
+
+        Preserves the icon's shape (alpha channel) and replaces its
+        color using SourceIn composition mode.
+
+        Args:
+            icon: The icon to recolor.
+            color: The target color.
+
+        Returns:
+            A new QIcon with the applied color.
+        """
+
         pixmap = icon.pixmap(24, 24)
         painter = QPainter(pixmap)
         painter.setCompositionMode(
@@ -56,6 +91,20 @@ class SimControls(QWidget):
         return QIcon(pixmap)
 
     def set_playing(self, state: SimulationState) -> None:
+        """
+        Returns a recolored copy of the given icon.
+
+        Preserves the icon's shape (alpha channel) and replaces its
+        color using SourceIn composition mode.
+
+        Args:
+            icon: The icon to recolor.
+            color: The target color.
+
+        Returns:
+            A new QIcon with the applied color.
+        """
+
         if state == SimulationState.RUNNING:
             pixmap = (QStyle.StandardPixmap.SP_MediaPause)
         elif state == SimulationState.FINISHED:

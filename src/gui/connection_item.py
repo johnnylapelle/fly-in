@@ -7,7 +7,19 @@ from .utils import SCALE
 
 
 class ConnectionItem(QGraphicsLineItem):
+    """
+    Graphical representation of a connection between two zones.
+
+    Renders as a dashed grey line between the two zone positions,
+    with the connection's maximum capacity displayed at the midpoint.
+    """
+
     def __init__(self, connection: Connection):
+        """
+        Args:
+            connection: The connection to render.
+        """
+
         super().__init__()
 
         pen = self.init_pen()
@@ -35,6 +47,13 @@ class ConnectionItem(QGraphicsLineItem):
         self.desc.setDefaultTextColor(QColor("black"))
 
     def init_pen(self) -> QPen:
+        """
+        Creates and returns the pen used to draw the connection line.
+
+        Returns:
+            A grey dashed QPen with a width of 3.
+        """
+
         pen = QPen()
         pen.setWidth(3)
         pen.setColor(QColor("grey"))

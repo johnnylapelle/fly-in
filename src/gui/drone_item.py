@@ -13,7 +13,20 @@ from .utils import SCALE, get_fish
 
 
 class DroneItem(QGraphicsObject):
+    """
+    Graphical representation of a drone in the scene.
+
+    Renders as a fish pixmap centered on the drone's current position.
+    Spawns with a random rotation. Supports both zone and connection
+    positions for animation midpoints.
+    """
+
     def __init__(self, drone: Drone) -> None:
+        """
+        Args:
+            drone: The drone this item represents.
+        """
+
         super().__init__()
         self.drone = drone
 
@@ -29,6 +42,8 @@ class DroneItem(QGraphicsObject):
         self.setRotation(random.randint(0, 360))
 
     def boundingRect(self) -> QRectF:
+        """Returns the bounding rectangle centered on the item's origin."""
+
         return QRectF(
             -self.rect.width() / 2,
             -self.rect.height() / 2,
@@ -39,6 +54,7 @@ class DroneItem(QGraphicsObject):
     def paint(self,
               painter: QPainter | None,
               option: Any, widget: Any = None) -> None:
+        """Draws the fish pixmap centered on the item's origin."""
 
         if isinstance(painter, QPainter):
             painter.drawPixmap(
@@ -48,6 +64,13 @@ class DroneItem(QGraphicsObject):
             )
 
     def move(self) -> None:
+        """
+        Moves the item to the drone's current position.
+
+        Handles both Zone and Connection positions. For connections,
+        the item is placed at the midpoint between the two connected zones.
+        """
+
         if isinstance(self.drone.position, Zone):
             zone = self.drone.position
 

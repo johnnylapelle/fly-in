@@ -19,7 +19,22 @@ from .utils import MARGIN, parse_name_map
 
 
 class MainWindow(QMainWindow):
+    """
+    Main application window.
+
+    Coordinates the graph view, overlay controls, simulation controls,
+    and turn label. Owns the map loading pipeline and wires all signals
+    between UI components and the simulator.
+    """
+
     def __init__(self, map_path: str | None, debug: bool) -> None:
+        """
+        Args:
+            map_path: Path to the map file to load on startup.
+                If None, the default map is loaded.
+            debug: If True, enables debug output in the simulator.
+        """
+
         super().__init__()
 
         self._map_path = map_path
@@ -32,6 +47,13 @@ class MainWindow(QMainWindow):
         self._load_initial_map()
 
     def _load_initial_map(self) -> None:
+        """
+        Loads the initial map on startup.
+
+        Uses map_path if provided, otherwise falls back to the default
+        map. Resets state on recoverable errors. Exits on critical errors.
+        """
+
         try:
             self.map_loader = MapLoader()
 
@@ -55,6 +77,12 @@ class MainWindow(QMainWindow):
             sys.exit(1)
 
     def _load_state(self) -> None:
+        """
+        Loads the initial map on startup.
+
+        Uses map_path if provided, otherwise falls back to the default
+        map. Resets state on recoverable errors. Exits on critical errors.
+        """
         self._drones = self.map_loader.drones
         self._zones = self.map_loader.zones
         self._connections = self.map_loader.connections
@@ -77,6 +105,14 @@ class MainWindow(QMainWindow):
         self._simulator.state_changed.connect(self._update_sim_controls)
 
     def _setup_ui(self) -> None:
+        """
+        Initializes and lays out all UI components.
+
+        Creates the graph view, turn label, overlay panel, and simulation
+        controls. Connects all signals and schedules initial positioning
+        via QTimer.
+        """
+
         central = QWidget()
         self._view = GraphView()
         QHBoxLayout(central).addWidget(self._view)
@@ -101,6 +137,13 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, self._update_overlay)
 
     def _setup_shortcut(self) -> None:
+        """
+        Registers keyboard shortcuts for simulation control.
+
+        Shortcuts: Space (play/pause), Left/Right arrows (step),
+        R (reset), M (load map), H (toggle descriptions), Escape (quit).
+        """
+
         try:
             shortcut_right = QShortcut(QKeySequence("Right"), self)
             shortcut_right.activated.connect(
@@ -137,6 +180,13 @@ class MainWindow(QMainWindow):
             pass
 
     def _toggle_load_map(self) -> None:
+        """
+        Opens a file dialog to load a new map.
+
+        Resets state on pathfinding or config errors. Exits on
+        unexpected errors.
+        """
+
         try:
             path, _ = QFileDialog.getOpenFileName(
                 parent=self,
@@ -162,6 +212,8 @@ class MainWindow(QMainWindow):
             sys.exit(1)
 
     def _toggle_description(self) -> None:
+        """Toggles zone description visibility in the scene."""
+
         try:
             self._scene.toggle_description()
             self._desc_visible = not self._desc_visible
@@ -170,6 +222,8 @@ class MainWindow(QMainWindow):
             pass
 
     def _toggle_play(self) -> None:
+        """Toggles the simulator play/pause state and updates the control icon."""
+
         if not hasattr(self, '_simulator'):
             return
 
@@ -179,12 +233,21 @@ class MainWindow(QMainWindow):
             self._simulator.state)
 
     def _toggle_next_prev(self, n: int) -> None:
+        """
+        Steps the simulation forward or backward by n turns.
+
+        Args:
+            n: 1 to advance, -1 to rewind.
+        """
+
         if not hasattr(self, '_simulator'):
             return
 
         self._simulator.increase_decrease_turn(n)
 
     def _toggle_reset(self) -> None:
+        """Resets the simulator and updates the simulation controls."""
+
         if not hasattr(self, '_simulator'):
             return
 
@@ -192,6 +255,13 @@ class MainWindow(QMainWindow):
         self._update_sim_controls()
 
     def _update_turn_label(self, turn: int) -> None:
+        """
+        Updates and repositions the turn label in the top-right corner.
+
+        Args:
+            turn: The current simulation turn to display.
+        """
+
         fturn = f"Turn: {turn}"
         fdrone = f"Drones: {self.map_loader.nb_drones}"
         if hasattr(self, 'path'):
@@ -211,6 +281,8 @@ class MainWindow(QMainWindow):
         self._turn_label.raise_()
 
     def _update_overlay(self) -> None:
+        """Repositions the overlay panel in the top-left corner."""
+
         self._overlay.adjustSize()
 
         self._overlay.move(MARGIN, MARGIN)
@@ -218,6 +290,11 @@ class MainWindow(QMainWindow):
         self._overlay.raise_()
 
     def _update_sim_controls(self) -> None:
+        """
+        Repositions the simulation controls at the bottom center of the window
+        and updates the play/pause icon to reflect the current simulator state.
+        """
+
         self._sim_controls.adjustSize()
 
         w = self._sim_controls.width()
@@ -235,6 +312,8 @@ class MainWindow(QMainWindow):
         self._sim_controls.raise_()
 
     def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        """Repositions all overlay widgets when the window is resized."""
+
         try:
             self._update_turn_label(self._simulator.turn)
         except AttributeError:
@@ -246,6 +325,13 @@ class MainWindow(QMainWindow):
         return super().resizeEvent(a0)
 
     def _reset_state(self) -> None:
+        """
+        Clears all simulation-related attributes and resets the view.
+
+        Called after a failed map load to leave the application in a
+        clean, consistent state.
+        """
+
         for attr in ('_graph', '_pathfinder', '_simulator', '_scene',
                      '_res_table', '_drones', '_zones', '_connections',
                      'path'):

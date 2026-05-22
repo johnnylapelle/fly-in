@@ -5,7 +5,17 @@ from ..core.zone import Zone
 
 
 class MapLoader():
+    """
+    Parses a map file and builds the zones, connections, and drones.
+
+    Map files are plain text with one directive per line. Supported
+    directives are: nb_drones, start_hub, hub, end_hub, and connection.
+    Lines starting with # are treated as comments and ignored.
+    """
+
     def __init__(self) -> None:
+        """Initializes an empty MapLoader ready to parse a file."""
+
         self._nb_drones = 0
         self._is_start_hub = False
         self._is_end_hub = False
@@ -24,18 +34,26 @@ class MapLoader():
 
     @property
     def zones(self) -> dict[str, Zone]:
+        """All zones parsed from the last call to parse(), keyed by name."""
+
         return self._zones
 
     @property
     def connections(self) -> dict[str, Connection]:
+        """All connections parsed from the last call to parse(), keyed by key."""
+
         return self._connections
 
     @property
     def drones(self) -> list[Drone]:
+        """All drones instantiated from the last call to parse()."""
+
         return self._drones
 
     @property
     def nb_drones(self) -> int:
+        """Number of drones defined in the last parsed map."""
+
         return self._nb_drones
 
     @nb_drones.setter
@@ -43,6 +61,16 @@ class MapLoader():
         self._nb_drones = n
 
     def parse(self, file: str) -> None:
+        """
+        Parses a map file and populates zones, connections, and drones.
+
+        Resets internal state before parsing, so calling parse() multiple
+        times on the same instance is safe.
+
+        Args:
+            file: Path to the map file to parse.
+        """
+
         self._reset()
 
         self._parse_map(file)
@@ -50,6 +78,16 @@ class MapLoader():
         self._lineno = 0
 
     def _parse_map(self, file: str) -> None:
+        """
+        Parses a map file and populates zones, connections, and drones.
+
+        Resets internal state before parsing, so calling parse() multiple
+        times on the same instance is safe.
+
+        Args:
+            file: Path to the map file to parse.
+        """
+
         with open(file, 'r') as f:
             for line in f:
                 self._lineno += 1
@@ -104,6 +142,16 @@ class MapLoader():
                         f" line - '{line}' not valid.")
 
     def _parse_nb_drones(self, line: str) -> None:
+        """
+        Parses the nb_drones directive and instantiates the drones.
+
+        Must be the first directive in the file. Raises if nb_drones
+        appears more than once or after any other directive.
+
+        Args:
+            line: The raw line containing the nb_drones directive.
+        """
+
         # check if the nb_drones is the very first line
         if (self._is_start_hub or self._is_end_hub
            or self._is_hub or self._is_connection):
@@ -139,6 +187,16 @@ class MapLoader():
             self._drones.append(drone)
 
     def _parse_zone(self, line: str, hub_type: str) -> None:
+        """
+        Parses the nb_drones directive and instantiates the drones.
+
+        Must be the first directive in the file. Raises if nb_drones
+        appears more than once or after any other directive.
+
+        Args:
+            line: The raw line containing the nb_drones directive.
+        """
+
         # check if arg len is >= 5
         zone_data = line.split()
         if (len(zone_data) < 4 or
@@ -237,6 +295,20 @@ class MapLoader():
             self._zones[zone.name] = zone
 
     def _parse_connection(self, line: str) -> None:
+        """
+        Parses the nb_drones directive and instantiates the drones.
+
+        Must be the first directive in the file. Raises if nb_drones
+        appears more than once or after any other directive.
+
+        Args:
+            line: The raw line containing the nb_drones directive.
+
+        Raises:
+            ConfigFileError: If the value is missing, not a positive
+                integer, or appears out of order.
+        """
+
         # get the datas and check the format
         if not self._is_start_hub or not self._is_end_hub:
             raise ConfigFileError(
@@ -325,6 +397,18 @@ class MapLoader():
 
     def _parse_metadatas(self, line: str,
                          valid_keys: list[str]) -> dict[str, str]:
+        """
+        Extracts key=value metadata from the bracketed section of a line.
+
+        Args:
+            line: The full raw line, optionally containing [...] metadata.
+            valid_keys: The list of accepted metadata keys.
+
+        Returns:
+            A dictionary of metadata key-value pairs. Empty if no
+            metadata block is present.
+        """
+
         # parse the metadatas and check if they are valid
         metadatas: dict[str, str] = {}
         try:
@@ -349,6 +433,18 @@ class MapLoader():
         return metadatas
 
     def _validate(self) -> None:
+        """
+        Extracts key=value metadata from the bracketed section of a line.
+
+        Args:
+            line: The full raw line, optionally containing [...] metadata.
+            valid_keys: The list of accepted metadata keys.
+
+        Returns:
+            A dictionary of metadata key-value pairs. Empty if no
+            metadata block is present.
+        """
+
         # check if there is one start_hub/end_hub
         if self._is_start_hub is False:
             raise ConfigFileError(
@@ -364,6 +460,8 @@ class MapLoader():
                 "   nb_drones: <number>")
 
     def _reset(self) -> None:
+        """Resets all internal state in preparation for a new parse."""
+
         self._nb_drones = 0
         self._is_start_hub = False
         self._is_end_hub = False
