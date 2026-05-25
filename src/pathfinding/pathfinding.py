@@ -64,7 +64,7 @@ class Pathfinding:
             drone.position = start
             start.current_nb_drone += 1
             drone.path = self._space_time_a_star()
-            drone._sim_path = [(node, t) for node, t in drone.path
+            drone.sim_path = [(node, t) for node, t in drone.path
                                if isinstance(node, Zone) or
                                (isinstance(node, Connection)
                                 and node.is_restricted)]

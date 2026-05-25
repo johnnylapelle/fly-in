@@ -83,8 +83,8 @@ class DroneItem(QGraphicsObject):
             zone_a = co.zone_a
             zone_b = co.zone_b
 
-            x = zone_a.x + zone_b.x / 2
-            y = zone_a.y + zone_b.y / 2
+            x = (zone_a.x + zone_b.x) / 2
+            y = (zone_a.y + zone_b.y) / 2
 
             self.setPos(
                 x * SCALE,

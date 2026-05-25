@@ -9,6 +9,18 @@ from src.gui.main_window import MainWindow
 
 
 def main() -> None:
+    """
+    Entry point for the Fly-in application.
+
+    Parses command-line arguments, initializes the Qt application, and
+    launches the main window. Handles all known exceptions with a clean
+    error message and a non-zero exit code.
+
+    Arguments:
+        --map: Path to a map file to load on startup. Optional.
+        --debug: Enables debug output in the simulator. Optional flag.
+    """
+
     try:
         parser = argparse.ArgumentParser(description="Fly-in")
         parser.add_argument('--map', type=str,
