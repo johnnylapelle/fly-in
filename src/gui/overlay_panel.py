@@ -12,7 +12,8 @@ class OverlayPanel(QWidget):
 
     Signals:
         load_map_requested: Emitted when the user clicks Load Map.
-        toggle_desc_requested: Emitted when the user clicks Hide/Show Description.
+        toggle_desc_requested: Emitted when the user
+            clicks Hide/Show Description.
         reset_requested: Emitted when the user clicks Reset.
     """
 

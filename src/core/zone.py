@@ -18,9 +18,11 @@ class Zone():
             y: Vertical position in the grid.
             is_start: True if this is the departure zone.
             is_end: True if this is the destination zone.
-            color: Display color name or hex string. None defaults to dark grey.
+            color: Display color name or hex string.
+                None defaults to dark grey.
             zone_type: One of 'normal', 'priority', 'restricted', or 'blocked'.
-            max_drones: Maximum number of drones allowed in this zone at the same turn.
+            max_drones: Maximum number of drones allowed in this
+                zone at the same turn.
         """
 
         self.name = name

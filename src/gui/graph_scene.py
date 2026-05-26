@@ -51,7 +51,8 @@ class GraphScene(QGraphicsScene):
 
     @property
     def drones_items(self) -> list[DroneItem]:
-        """Graphical items for each drone, in the same order as the drone list."""
+        """Graphical items for each drone,
+        in the same order as the drone list."""
 
         return self._drones_items
 

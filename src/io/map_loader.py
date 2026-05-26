@@ -40,7 +40,8 @@ class MapLoader():
 
     @property
     def connections(self) -> dict[str, Connection]:
-        """All connections parsed from the last call to parse(), keyed by key."""
+        """All connections parsed from the last call
+        to parse(), keyed by key."""
 
         return self._connections
 

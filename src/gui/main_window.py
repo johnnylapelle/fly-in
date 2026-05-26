@@ -222,7 +222,8 @@ class MainWindow(QMainWindow):
             pass
 
     def _toggle_play(self) -> None:
-        """Toggles the simulator play/pause state and updates the control icon."""
+        """Toggles the simulator play/pause
+        state and updates the control icon."""
 
         if not hasattr(self, '_simulator'):
             return

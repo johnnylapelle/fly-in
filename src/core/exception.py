@@ -6,7 +6,8 @@ class ConfigFileError(Exception):
 
 
 class GraphError(Exception):
-    """Raised when the graph is in an invalid state, such as a missing start or end zone."""
+    """Raised when the graph is in an invalid state,
+    such as a missing start or end zone."""
 
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
