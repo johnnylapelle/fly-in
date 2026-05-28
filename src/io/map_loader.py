@@ -268,6 +268,12 @@ class MapLoader():
         is_start = hub_type == 'start_hub'
         is_end = hub_type == 'end_hub'
 
+        if is_start or is_end:
+            if zone_type == "blocked":
+                raise ConfigFileError(
+                    f"Line {self._lineno} - "
+                    f"Start and end zones cannot be blocked.")
+
         for zone in self._zones.values():
             if zone.x == zone_x_int and zone.y == zone_y_int:
                 raise ConfigFileError(

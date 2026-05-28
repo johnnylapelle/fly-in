@@ -351,4 +351,7 @@ class Simulator(QObject):
         for zone in self._graph.zones.values():
             print(f"{zone.name} "
                   f"{zone.current_nb_drone}/{zone.max_drones}")
+        for co in self._graph.connections.values():
+            print(f"{co.key} "
+                  f"{co.current_nb_drone}/{co.max_capacity}")
         print()
