@@ -24,7 +24,7 @@ lint:
 	@echo "Linting Done!"
 
 lint-strict:
-	@echo "Linting stric mode..."
+	@echo "Linting strict mode..."
 	$(FLAKE8) $(MAIN) $(SRC)
 	$(MYPY) --strict $(MAIN) $(SRC)
 	@echo "Linting Done!"
